@@ -1,3 +1,10 @@
+###########################################################
+#OBROGATÓRIO O USO DO POSTMAN PARA AS REQUISIÇÕES E A ROTA#
+#OBROGATÓRIO O USO DO POSTMAN PARA AS REQUISIÇÕES E A ROTA#
+#OBROGATÓRIO O USO DO POSTMAN PARA AS REQUISIÇÕES E A ROTA#
+#OBROGATÓRIO O USO DO POSTMAN PARA AS REQUISIÇÕES E A ROTA#
+###########################################################
+
 from flask import Flask, jsonify, request  
 
 
