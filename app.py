@@ -7,33 +7,6 @@
 
 
 
-#{
-#  "nome": "Joel",
-#  "id": 2,
-#  "idade": 15,
-#  "turma_id": 1,
-#  "data_nascimento": "17/10/2005",
-#  "nota_primeiro_semestre": 8,
-#  "nota_segundo_semestre": 9
-#}
-
-#{
-#  "nome": "Cleber Machado",
-#  "idade": 19,
-#  "materia": "matemática",
-#  "id": 2,
-#  "observacoes": "É um professor muito esperto e reconhecido pelo MEC"
-#}
-
-#{
-#  "id": 2,
-#  "descricao": "Sala do nono ano B",
-#  "professor_id": 1,
-#  "ativo": true
-#}
-
-
-
 from flask import Flask, jsonify, request  
 
 
@@ -41,20 +14,29 @@ dici = {
     "alunos": [
         {
             "id": 1,
-            "nome": "Caio",
-            "idade": 20  
+            "nome": "Joel",
+            "idade": 20,
+            "turma_id": 1,
+            "data_nascimento": "17/10/2005",
+            "nota_primeiro_semestre": 5,
+            "nota_segundo_semestre": 5  
         }
     ],
     "professores": [  
         {
             "id": 1,
-            "nome": "Rafael"
+            "nome": "Cleber Machado",
+            "idade": 40,
+            "materia": "matemática",
+            "observacoes": "um professor muito esperto e reconhecido pelo MEC"
         }
     ],
     "turmas": [
         {
             "id": 1,
-            "nome": "APIs"
+            "descricao": "APIs 4B manhã",
+            "professor_id": 1,
+            "ativo": True
         }
     ],
 }
