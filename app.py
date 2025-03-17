@@ -40,6 +40,8 @@ def getAluno():
     dados = dici['alunos']  
     return jsonify(dados)
 
+############################################
+
 # Rota POST para adicionar um aluno
 @app.route('/alunos', methods=['POST'])
 def createAluno():
@@ -57,6 +59,8 @@ def createAluno():
     # Adiciona o novo aluno à lista
     dici['alunos'].append(dados)
     return jsonify({"mensagem": "Aluno cadastrado com sucesso!", "aluno": dados}), 201
+
+############################################
 
 # Rota PUT para atualizar aluno por ID
 @app.route("/alunos/<int:idAluno>", methods=['PUT'])
@@ -80,6 +84,8 @@ def updateAlunos(idAluno):
     
     return jsonify({"erro": "Aluno não encontrado"}), 404  # Retorna erro corretamente
 
+############################################
+
 # Rota DELETE para remover um aluno por ID
 @app.route('/alunos/<int:idAluno>', methods=['DELETE'])
 def deleteAluno(idAluno):
@@ -91,21 +97,104 @@ def deleteAluno(idAluno):
     return jsonify({'erro': 'Aluno não encontrado'}), 404
     
 
-#-------------------------------------------------------------------#
+#-------------------------------------------------------------------##-------------------------------------------------------------------#
 
 @app.route("/professores", methods=['GET'])
 def getProfessor():
     dados = dici['professor']  
     return jsonify(dados)
 
+############################################
 
-#-------------------------------------------------------------------#
+@app.route('/professores', methods = ['POST'])
+def createProfessor():
+    dados = request.json
+
+    campos_obrigatorios = ['id', 'nome', 'idade', 'matéria', 'observações']
+    if not all(campo in dados for campo in campos_obrigatorios):
+        return jsonify({"erro": "Campos obrigatórios faltando!"}), 400
+    
+    dici['professor'].append(dados)
+    return jsonify({"mensagem": "Professor cadastrado com sucesso!", "professor": dados}), 201
+
+############################################
+
+@app.route("/professores/<int:idProfessor>", methods=['PUT'])
+def updateProfessores(idProfessor):
+    for professor in dici["professor"]:
+        if professor['id'] == idProfessor:
+            dados = request.json 
+
+            # Atualiza os dados conforme enviados
+            professor["nome"] = dados.get('nome', professor["nome"])
+            professor["idade"] = dados.get('idade', professor["idade"])
+            professor["matéria"] = dados.get('matéria', professor["matéria"])
+            professor["observações"] = dados.get('observações',professor["observações"])
+
+            return jsonify({"mensagem": "Professor atualizado!", "professor": professor})
+    
+    return jsonify({"erro": "Professor não encontrado"}), 404  
+
+############################################
+
+@app.route('/professores/<int:idProfessor>', methods=['DELETE'])
+def deleteAluno(idProfessor):
+    for professor in dici["professor"]:
+        if professor['id'] == idProfessor:
+            dici["professor"].remove(professor)
+            return jsonify({'mensagem': 'Professor removido com sucesso!'})
+    
+    return jsonify({'erro': 'Professor não encontrado'}), 404
+
+#-------------------------------------------------------------------##-------------------------------------------------------------------#
 
 @app.route("/turma", methods=['GET'])
 def getTurma():
     dados = dici['turma']  
     return jsonify(dados)
 
-#-------------------------------------------------------------------#
+############################################
+
+@app.route('/turmas', methods = ['POST'])
+def createTurma():
+    dados = request.json
+
+    campos_obrigatorios = ['id', 'descricao', 'professor_id', 'ativo']
+    if not all(campo in dados for campo in campos_obrigatorios):
+        return jsonify({"erro": "Campos obrigatórios faltando!"}), 400
+    
+    dici['turma'].append(dados)
+    return jsonify({"mensagem": "Turma cadastrada com sucesso!", "turma": dados}), 201
+
+############################################
+
+@app.route("/turmas/<int:idTurma>", methods=['PUT'])
+def updateTurmas(idTurma):
+    for turma in dici["turma"]:
+        if turma['id'] == idTurma:
+            dados = request.json 
+
+            # Atualiza os dados conforme enviados
+            turma["descricao"] = dados.get('descricao', turma["descricao"])
+            turma["professor_id"] = dados.get('professor_id', turma["professor_id"])
+            turma["ativo"] = dados.get('ativo', turma["ativo"])
+
+
+            return jsonify({"mensagem": "Turma atualizada!", "turma": turma})
+    
+    return jsonify({"erro": "Turma não encontrada"}), 404  
+
+############################################
+
+@app.route('/turmas/<int:idTurma>', methods=['DELETE'])
+def deleteTurma(idTurma):
+    for turma in dici["turma"]:
+        if turma['id'] == idTurma:
+            dici["turma"].remove(turma)
+            return jsonify({'mensagem': 'Turma removida com sucesso!'})
+    
+    return jsonify({'erro': 'Turma não encontrada'}), 404
+
+#-------------------------------------------------------------------##-------------------------------------------------------------------#
 if __name__ == "__main__":
     app.run(debug=True)
