@@ -6,7 +6,7 @@
 ###########################################################
 
 
-##################EXEMPLOS DE ENTRADA#########################################
+
 #{
 #  "nome": "Joel",
 #  "id": 2,
@@ -20,9 +20,9 @@
 #{
 #  "nome": "Cleber Machado",
 #  "idade": 19,
-#  "matéria": "matemática",
+#  "materia": "matemática",
 #  "id": 2,
-#  "observações": "É um professor muito esperto e reconhecido pelo MEC"
+#  "observacoes": "É um professor muito esperto e reconhecido pelo MEC"
 #}
 
 #{
@@ -31,7 +31,7 @@
 #  "professor_id": 1,
 #  "ativo": true
 #}
-##################EXEMPLOS DE ENTRADA#########################################
+
 
 
 from flask import Flask, jsonify, request  
@@ -155,7 +155,7 @@ def getProfessorById(idProfessor):
 def createProfessor():
     dados = request.json
 
-    campos_obrigatorios = ['id', 'nome', 'idade', 'matéria', 'observações']
+    campos_obrigatorios = ['id', 'nome', 'idade', 'materia', 'observacoes']
     if not all(campo in dados for campo in campos_obrigatorios):
         return jsonify({"erro": "Campos obrigatórios faltando!"}), 400
     
@@ -173,8 +173,8 @@ def updateProfessores(idProfessor):
             # Atualiza os dados conforme enviados
             professor["nome"] = dados.get('nome', professor["nome"])
             professor["idade"] = dados.get('idade', professor["idade"])
-            professor["matéria"] = dados.get('matéria', professor["matéria"])
-            professor["observações"] = dados.get('observações',professor["observações"])
+            professor["materia"] = dados.get('materia', professor["materia"])
+            professor["observacoes"] = dados.get('observacoes',professor["observacoes"])
 
             return jsonify({"mensagem": "Professor atualizado!", "professor": professor})
     
