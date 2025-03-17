@@ -64,20 +64,27 @@ def getAlunoById(idAluno):
 # Rota POST para adicionar um aluno
 @app.route('/alunos', methods=['POST'])
 def createAluno():
-    dados = request.json  # Recebe o JSON enviado na requisição
+    dados = request.json
 
-    # Valida se os campos obrigatórios foram enviados
     campos_obrigatorios = ['id', 'nome', 'idade', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre']
     if not all(campo in dados for campo in campos_obrigatorios):
         return jsonify({"erro": "Campos obrigatórios faltando!"}), 400
 
-    # Calcula a média final
-    media_final = (dados["nota_primeiro_semestre"] + dados["nota_segundo_semestre"]) / 2
-    dados["media_final"] = media_final  # Adiciona a média ao aluno
+    aluno_existe = any(aluno['id'] == dados['id'] for aluno in dici["alunos"])
+    if aluno_existe:
+        return jsonify({"erro": "Aluno ja existente com esse ID"})
 
-    # Adiciona o novo aluno à lista
+    # Verificar se turma_id existe antes de cadastrar o aluno
+    turma_existe = any(turma['id'] == dados['turma_id'] for turma in dici["turmas"])
+    if not turma_existe:
+        return jsonify({"erro": "Turma não encontrada!"}), 400
+
+    # Calcular média final
+    dados["media_final"] = (dados["nota_primeiro_semestre"] + dados["nota_segundo_semestre"]) / 2
+
     dici['alunos'].append(dados)
     return jsonify({"mensagem": "Aluno cadastrado com sucesso!", "aluno": dados}), 201
+
 
 ############################################
 
@@ -133,16 +140,21 @@ def getProfessorById(idProfessor):
 
 ############################################
 
-@app.route('/professores', methods = ['POST'])
+@app.route('/professores', methods=['POST'])
 def createProfessor():
     dados = request.json
 
-    campos_obrigatorios = ['id', 'nome', 'idade', 'materia', 'observacoes']
+    campos_obrigatorios = ['id', 'nome', 'idade', 'materia', 'observacoes']  # Corrigido
     if not all(campo in dados for campo in campos_obrigatorios):
         return jsonify({"erro": "Campos obrigatórios faltando!"}), 400
     
+    professor_existe = any(professor['id'] == dados['id'] for professor in dici["professores"])
+    if professor_existe:
+        return jsonify({"erro": "Professor ja existente com esse ID"})    
+
     dici['professores'].append(dados)
     return jsonify({"mensagem": "Professor cadastrado com sucesso!", "professor": dados}), 201
+
 
 ############################################
 
@@ -190,16 +202,26 @@ def getTurmaById(idTurma):
 
 ############################################
 
-@app.route('/turmas', methods = ['POST'])
+@app.route('/turmas', methods=['POST'])
 def createTurma():
     dados = request.json
 
     campos_obrigatorios = ['id', 'descricao', 'professor_id', 'ativo']
     if not all(campo in dados for campo in campos_obrigatorios):
         return jsonify({"erro": "Campos obrigatórios faltando!"}), 400
-    
+
+    turma_existe = any(turma['id'] == dados['id'] for turma in dici["turmas"])
+    if turma_existe:
+        return jsonify({"erro": "Turma ja existente com esse ID"})
+
+    # Verificar se professor_id existe antes de cadastrar a turma
+    professor_existe = any(professor['id'] == dados['professor_id'] for professor in dici["professores"])
+    if not professor_existe:
+        return jsonify({"erro": "Professor não encontrado!"}), 400
+
     dici['turmas'].append(dados)
     return jsonify({"mensagem": "Turma cadastrada com sucesso!", "turma": dados}), 201
+
 
 ############################################
 
