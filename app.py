@@ -5,6 +5,35 @@
 #OBROGATÓRIO O USO DO POSTMAN PARA AS REQUISIÇÕES E A ROTA#
 ###########################################################
 
+
+
+#{
+#  "nome": "Joel",
+#  "id": 2
+#  "idade": 15,
+#  "turma_id": 1,
+#  "data_nascimento": 17/10/2005,
+#  "nota_primeiro_semestre": 8,
+#  "nota_segundo_semestre": 9
+#}
+
+#{
+#  "nome": "Cleber Machado",
+#  "idade": 19,
+#  "matéria": "matemática",
+#  "id": 2,
+#  "observações": "É um professor muito esperto e reconhecido pelo MEC"
+#}
+
+#{
+#  "id": 2,
+#  "descrição": "Sala do nono ano B",
+#  "professor_id": "1",
+#  "ativo": "Sim"
+#}
+
+
+
 from flask import Flask, jsonify, request  
 
 
@@ -138,7 +167,7 @@ def updateProfessores(idProfessor):
 ############################################
 
 @app.route('/professores/<int:idProfessor>', methods=['DELETE'])
-def deleteAluno(idProfessor):
+def deleteProfessor(idProfessor):
     for professor in dici["professor"]:
         if professor['id'] == idProfessor:
             dici["professor"].remove(professor)
