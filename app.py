@@ -6,7 +6,7 @@
 ###########################################################
 
 
-
+import re  # Importa regex para validar o nome
 from flask import Flask, jsonify, request  
 
 
@@ -43,6 +43,11 @@ dici = {
 
 app = Flask(__name__)
 
+
+# Função para validar nomes (somente letras e espaços)
+def validar_nome(nome):
+    return bool(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ ]+$", nome))
+
 #-------------------------------------------------------------------##-------------------------------------------------------------------#
 
 
@@ -65,21 +70,25 @@ def getAlunoById(idAluno):
 @app.route('/alunos', methods=['POST'])
 def createAluno():
     dados = request.json
-
     campos_obrigatorios = ['id', 'nome', 'idade', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre']
+
     if not all(campo in dados for campo in campos_obrigatorios):
         return jsonify({"erro": "Campos obrigatórios faltando!"}), 400
 
+    if not validar_nome(dados["nome"]):
+        return jsonify({"erro": "O nome deve conter apenas letras e espaços!"}), 400
+
+    if dados['idade'] <= 0:
+        return jsonify({"erro": "Idade invalida"})
+    
     aluno_existe = any(aluno['id'] == dados['id'] for aluno in dici["alunos"])
     if aluno_existe:
-        return jsonify({"erro": "Aluno ja existente com esse ID"})
+        return jsonify({"erro": "Aluno já existente com esse ID"}), 400
 
-    # Verificar se turma_id existe antes de cadastrar o aluno
     turma_existe = any(turma['id'] == dados['turma_id'] for turma in dici["turmas"])
     if not turma_existe:
         return jsonify({"erro": "Turma não encontrada!"}), 400
 
-    # Calcular média final
     dados["media_final"] = (dados["nota_primeiro_semestre"] + dados["nota_segundo_semestre"]) / 2
 
     dici['alunos'].append(dados)
@@ -88,27 +97,40 @@ def createAluno():
 
 ############################################
 
-# Rota PUT para atualizar aluno por ID
 @app.route("/alunos/<int:idAluno>", methods=['PUT'])
 def updateAlunos(idAluno):
     for aluno in dici["alunos"]:
         if aluno['id'] == idAluno:
-            dados = request.json  # Dados atualizados do aluno
+            dados = request.json
+            campos_obrigatorios = ['nome', 'idade', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre']
 
-            # Atualiza os dados conforme enviados
-            aluno["nome"] = dados.get('nome', aluno["nome"])
-            aluno["idade"] = dados.get('idade', aluno["idade"])
-            aluno["turma_id"] = dados.get('turma_id', aluno.get('turma_id'))
-            aluno["data_nascimento"] = dados.get('data_nascimento', aluno.get("data_nascimento"))
-            aluno["nota_primeiro_semestre"] = dados.get('nota_primeiro_semestre', aluno.get("nota_primeiro_semestre", 0))
-            aluno["nota_segundo_semestre"] = dados.get('nota_segundo_semestre', aluno.get("nota_segundo_semestre", 0))
+            # Verifica se todos os campos obrigatórios estão preenchidos
+            if not all(campo in dados and dados[campo] not in [None, ""] for campo in campos_obrigatorios):
+                return jsonify({"erro": "Todos os campos são obrigatórios para serem preenchidos!"}), 400
+            
+            # Verifica se o nome é válido
+            if not validar_nome(dados["nome"]):
+                return jsonify({"erro": "O nome deve conter apenas letras e espaços!"}), 400
+            
+            if dados['idade'] <= 0:
+                return jsonify({"erro": "Idade invalida"})
+
+            # Impede a alteração do ID para um já existente
+            if "id" in dados and dados["id"] != idAluno:
+                aluno_existe = any(a['id'] == dados["id"] for a in dici["alunos"])
+                if aluno_existe:
+                    return jsonify({"erro": "ID já existe para outro aluno!"}), 400
+            
+            # Atualiza os dados, exceto o ID
+            aluno.update({dados: i for dados, i in dados.items() if dados != "id"})
 
             # Recalcula a média final
             aluno["media_final"] = (aluno["nota_primeiro_semestre"] + aluno["nota_segundo_semestre"]) / 2
 
             return jsonify({"mensagem": "Aluno atualizado!", "aluno": aluno})
     
-    return jsonify({"erro": "Aluno não encontrado"}), 404  # Retorna erro corretamente
+    return jsonify({"erro": "Aluno não encontrado"}), 404
+
 
 ############################################
 
@@ -143,17 +165,27 @@ def getProfessorById(idProfessor):
 @app.route('/professores', methods=['POST'])
 def createProfessor():
     dados = request.json
+    campos_obrigatorios = ['id', 'nome', 'idade', 'materia', 'observacoes']
 
-    campos_obrigatorios = ['id', 'nome', 'idade', 'materia', 'observacoes']  # Corrigido
     if not all(campo in dados for campo in campos_obrigatorios):
         return jsonify({"erro": "Campos obrigatórios faltando!"}), 400
+
+    if not validar_nome(dados["nome"]):
+        return jsonify({"erro": "O nome deve conter apenas letras e espaços!"}), 400
     
+    if dados['idade'] <= 0:
+        return jsonify({"erro": "Idade invalida"})
+
+    if dados['idade'] < 17:
+        return jsonify({"erro": "Idade invalida, muito novo para ser professor"})
+
     professor_existe = any(professor['id'] == dados['id'] for professor in dici["professores"])
     if professor_existe:
-        return jsonify({"erro": "Professor ja existente com esse ID"})    
+        return jsonify({"erro": "Professor já existente com esse ID"}), 400
 
     dici['professores'].append(dados)
     return jsonify({"mensagem": "Professor cadastrado com sucesso!", "professor": dados}), 201
+
 
 
 ############################################
@@ -162,18 +194,32 @@ def createProfessor():
 def updateProfessores(idProfessor):
     for professor in dici["professores"]:
         if professor['id'] == idProfessor:
-            dados = request.json 
+            dados = request.json
+            campos_obrigatorios = ['nome', 'idade', 'materia', 'observacoes']
 
-            # Atualiza os dados conforme enviados
-            professor["nome"] = dados.get('nome', professor["nome"])
-            professor["idade"] = dados.get('idade', professor["idade"])
-            professor["materia"] = dados.get('materia', professor["materia"])
-            professor["observacoes"] = dados.get('observacoes',professor["observacoes"])
+            if not all(campo in dados and dados[campo] not in [None, ""] for campo in campos_obrigatorios):
+                return jsonify({"erro": "Todos os campos são obrigatórios para serem preenchidos!"}), 400
+
+            if not validar_nome(dados["nome"]):
+                return jsonify({"erro": "O nome deve conter apenas letras e espaços!"}), 400
+
+            if dados['idade'] <= 0:
+                return jsonify({"erro": "Idade invalida"})
+
+            if dados['idade'] < 17:
+                return jsonify({"erro": "Idade invalida, muito novo para ser professor"})
+
+            # Impede a alteração do ID para um já existente
+            if "id" in dados and dados["id"] != idProfessor:
+                professor_existe = any(p['id'] == dados["id"] for p in dici["professores"])
+                if professor_existe:
+                    return jsonify({"erro": "ID já existe para outro professor!"}), 400
+
+            professor.update({dados: i for dados, i in dados.items() if dados != "id"})
 
             return jsonify({"mensagem": "Professor atualizado!", "professor": professor})
     
     return jsonify({"erro": "Professor não encontrado"}), 404  
-
 ############################################
 
 @app.route('/professores/<int:idProfessor>', methods=['DELETE'])
@@ -229,13 +275,19 @@ def createTurma():
 def updateTurmas(idTurma):
     for turma in dici["turmas"]:
         if turma['id'] == idTurma:
-            dados = request.json 
+            dados = request.json  
+            campos_obrigatorios = ['descricao', 'professor_id', 'ativo']
 
-            # Atualiza os dados conforme enviados
-            turma["descricao"] = dados.get('descricao', turma["descricao"])
-            turma["professor_id"] = dados.get('professor_id', turma["professor_id"])
-            turma["ativo"] = dados.get('ativo', turma["ativo"])
+            if not all(campo in dados and dados[campo] not in [None, ""] for campo in campos_obrigatorios):
+                return jsonify({"erro": "Todos os campos são obrigatórios!"}), 400
 
+            # Impede a alteração do ID para um já existente
+            if "id" in dados and dados["id"] != idTurma:
+                turma_existe = any(t['id'] == dados["id"] for t in dici["turmas"])
+                if turma_existe:
+                    return jsonify({"erro": "ID já existe para outra turma!"}), 400
+
+            turma.update({dados: i for dados, i in dados.items() if dados != "id"})
 
             return jsonify({"mensagem": "Turma atualizada!", "turma": turma})
     
@@ -253,5 +305,17 @@ def deleteTurma(idTurma):
     return jsonify({'erro': 'Turma não encontrada'}), 404
 
 #-------------------------------------------------------------------##-------------------------------------------------------------------#
+
+@app.route("/reset", methods=['POST', 'DELETE'])
+def resetar_dados():
+    if not dici["alunos"] and not dici["professores"]:
+        return jsonify({"mensagem": "As listas de alunos e professores já estão vazias!"})
+
+    dici["alunos"].clear()
+    dici["professores"].clear()
+    return jsonify({"mensagem": "Listas de alunos e professores foram apagadas com sucesso!"})
+
+#-------------------------------------------------------------------##-------------------------------------------------------------------#
+
 if __name__ == "__main__":
     app.run(debug=True)
