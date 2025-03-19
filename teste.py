@@ -50,12 +50,12 @@ class TesteAPI(unittest.TestCase):
         time.sleep(1)  # Aguarde a criação dos recursos
 
     # Teste alunos
-    def test_get_alunos(self):
+    def test_01a_get_alunos(self):
         resposta = requests.get(f"{URL_Base}/alunos")
         resposta_json = resposta.json()
         self.assertIsInstance(resposta_json, list)
 
-    def test_post_alunos(self):
+    def test_02a_post_alunos(self):
         dados = {
             "id": 2,
             "nome": "Maria Oliveira",
@@ -73,7 +73,7 @@ class TesteAPI(unittest.TestCase):
         resposta_json = resposta.json  # No parentheses here
         self.assertEqual(resposta_json['mensagem'], 'Aluno cadastrado com sucesso!')
 
-    def test_delete_alunos(self):
+    def test_03a_delete_alunos(self):
         resposta_lista = requests.get(f"{URL_Base}/alunos").json()
         aluno_id = resposta_lista[0]['id'] if resposta_lista else None
         if aluno_id:
@@ -82,7 +82,7 @@ class TesteAPI(unittest.TestCase):
         else:
             self.skipTest("Nenhum aluno encontrado para deletar")
 
-    def test_edita_aluno(self):
+    def test_04a_edita_aluno(self):
         dados = {
             "nome": "Joel Lima",
             "idade": 21,
@@ -99,11 +99,11 @@ class TesteAPI(unittest.TestCase):
         resposta_json = json.loads(resposta.data)
         self.assertEqual(resposta_json['mensagem'], 'Aluno atualizado!')
 
-    def test_get_alunos_inexistente(self):
+    def test_05a_get_alunos_inexistente(self):
         resposta = requests.get(f"{URL_Base}/alunos/999")  # ID inexistente
         self.assertEqual(resposta.json(), {"erro": "Aluno não encontrado"})
 
-    def test_post_alunos_sem_nome(self):
+    def test_06a_post_alunos_sem_nome(self):
         dados = {
             "idade": 20,
             "turma_id": 1
@@ -112,17 +112,17 @@ class TesteAPI(unittest.TestCase):
         self.assertIn("erro", resposta.json())  # Espera chave 'erro'
         
     # Teste professores
-    def test_100_get_lista_professores(self):
+    def test_01p_get_lista_professores(self):
         resposta = requests.get(f"{URL_Base}/professores")
         resposta_json = resposta.json()
         self.assertIsInstance(resposta_json, list)
 
-    def test_102_get_professor_por_id(self):
+    def test_02p_get_professor_por_id(self):
         resposta = requests.get(f"{URL_Base}/professores/1")
         self.assertEqual(resposta.status_code, 200)
         self.assertIsInstance(resposta.json(), dict)
 
-    def test_post_professores(self):
+    def test_03p_post_professores(self):
         dados = {
             "id": 2,
             "nome": "Ana Costa",
@@ -138,7 +138,7 @@ class TesteAPI(unittest.TestCase):
         resposta_json = json.loads(resposta.data)
         self.assertEqual(resposta_json['mensagem'], 'Professor cadastrado com sucesso!')
 
-    def test_103_delete_professor(self):
+    def test_04p_delete_professor(self):
         resposta_lista = requests.get(f"{URL_Base}/professores").json()
         professor_id = resposta_lista[0]['id'] if resposta_lista else None
         if professor_id:
@@ -147,7 +147,7 @@ class TesteAPI(unittest.TestCase):
         else:
             self.skipTest("Nenhum professor encontrado para deletar")
 
-    def test_104_put_edita_professor(self):
+    def test_05p_put_edita_professor(self):
         # Supondo que o professor com ID 1 exista
         dados = {
             "nome": "Cleber Machado",
@@ -163,11 +163,11 @@ class TesteAPI(unittest.TestCase):
         resposta_json = json.loads(resposta.data)
         self.assertEqual(resposta_json['mensagem'], 'Professor atualizado!')
 
-    def test_106_get_professor_inexistente(self):
+    def test_06p_get_professor_inexistente(self):
         resposta = requests.get(f"{URL_Base}/professores/999")  # ID inexistente
         self.assertEqual(resposta.json(), {"erro": "Professor não encontrado"})
 
-    def test_107a_post_professor_sem_nome(self):
+    def test_07p_post_professor_sem_nome(self):
         dados = {
             "idade": 30,
             "materia": "História",
@@ -177,17 +177,17 @@ class TesteAPI(unittest.TestCase):
         self.assertIn("erro", resposta.json())
 
     # Teste turma
-    def test_200_get_lista_turmas(self):
+    def test_01t_get_lista_turmas(self):
         resposta = requests.get(f"{URL_Base}/turmas")
         resposta_json = resposta.json()
         self.assertIsInstance(resposta_json, list)
 
-    def test_202_get_turmas_por_id(self):
+    def test_02t_get_turmas_por_id(self):
         resposta = requests.get(f"{URL_Base}/turmas/1")
         self.assertEqual(resposta.status_code, 200)
         self.assertIsInstance(resposta.json(), dict)
 
-    def test_201_post_cria_turmas(self):
+    def test_03t_post_cria_turmas(self):
         dados = {
             "id": 2,
             "descricao": "Turma de Teste",
@@ -197,7 +197,7 @@ class TesteAPI(unittest.TestCase):
         resposta = requests.post(f"{URL_Base}/turmas", json=dados)
         self.assertEqual(resposta.status_code, 201)
 
-    def test_203_delete_turma(self):
+    def test_04t_delete_turma(self):
         resposta_lista = requests.get(f"{URL_Base}/turmas").json()
         turma_id = resposta_lista[0]['id'] if resposta_lista else None
         if turma_id:
@@ -206,7 +206,7 @@ class TesteAPI(unittest.TestCase):
         else:
             self.skipTest("Nenhuma turma encontrada para deletar")
 
-    def test_204_put_edita_turma(self):
+    def test_05t_put_edita_turma(self):
         dados = {
             "descricao": "APIs 4B tarde",
             "professor_id": 1,
@@ -220,11 +220,11 @@ class TesteAPI(unittest.TestCase):
         resposta_json = json.loads(resposta.data)
         self.assertEqual(resposta_json['mensagem'], 'Turma atualizada!')
 
-    def test_206_get_turma_inexistente(self):
+    def test_06t_get_turma_inexistente(self):
         resposta = requests.get(f"{URL_Base}/turmas/999")  # ID inexistente
         self.assertEqual(resposta.json(), {"erro": "Turma não encontrada"})
 
-    def test_207a_post_turma_sem_descricao(self):
+    def test_07t_post_turma_sem_descricao(self):
         dados = {
             "nome": "Turma A"
         }
