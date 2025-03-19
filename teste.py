@@ -9,11 +9,11 @@ URL_Base = "http://127.0.0.1:5000"
 class TesteAPI(unittest.TestCase):
     
     def setUp(self):
-        self.app = app.test_client()  # Inicializa o test client
-        self.app.testing = True  # Habilita o modo de teste
+        self.app = app.test_client()  
+        self.app.testing = True 
         time.sleep(1)
         
-        # Garantir que o professor com id=1 exista
+
         resposta_professor = requests.get(f"{URL_Base}/professores/1")
         if resposta_professor.status_code != 200:
             dados_professor = {
@@ -25,31 +25,31 @@ class TesteAPI(unittest.TestCase):
             }
             requests.post(f"{URL_Base}/professores", json=dados_professor)
         
-        # Garantir que a turma com id=1 exista
+
         resposta_turma = requests.get(f"{URL_Base}/turmas/1")
         if resposta_turma.status_code != 200:
             dados_turma = {
                 "id": 1,
                 "descricao": "Turma Teste",
-                "professor_id": 1,  # Associando o professor com id=1
+                "professor_id": 1, 
                 "ativo": True
             }
             requests.post(f"{URL_Base}/turmas", json=dados_turma)
         
-        # Garantir que o aluno com id=1 exista
+
         resposta_aluno = requests.get(f"{URL_Base}/alunos/1")
         if resposta_aluno.status_code != 200:
             dados_aluno = {
                 "id": 1,
                 "nome": "Aluno Teste",
                 "idade": 22,
-                "turma_id": 1  # Associando a turma com id=1
+                "turma_id": 1 
             }
             requests.post(f"{URL_Base}/alunos", json=dados_aluno)
         
-        time.sleep(1)  # Aguarde a criação dos recursos
+        time.sleep(1) 
 
-    # Teste alunos
+    
     def test_01a_get_alunos(self):
         resposta = requests.get(f"{URL_Base}/alunos")
         resposta_json = resposta.json()
@@ -68,9 +68,9 @@ class TesteAPI(unittest.TestCase):
 
         resposta = self.app.post('/alunos', json=dados)
 
-        # Verificar se a resposta foi 201 (criação bem-sucedida)
+       
         self.assertEqual(resposta.status_code, 201)
-        resposta_json = resposta.json  # No parentheses here
+        resposta_json = resposta.json 
         self.assertEqual(resposta_json['mensagem'], 'Aluno cadastrado com sucesso!')
 
     def test_03a_delete_alunos(self):
@@ -94,13 +94,13 @@ class TesteAPI(unittest.TestCase):
 
         resposta = self.app.put('/alunos/1', data=json.dumps(dados), content_type='application/json')
 
-        # Verificar se a resposta foi 200 (sucesso)
+       
         self.assertEqual(resposta.status_code, 200)
         resposta_json = json.loads(resposta.data)
         self.assertEqual(resposta_json['mensagem'], 'Aluno atualizado!')
 
     def test_05a_get_alunos_inexistente(self):
-        resposta = requests.get(f"{URL_Base}/alunos/999")  # ID inexistente
+        resposta = requests.get(f"{URL_Base}/alunos/999")  
         self.assertEqual(resposta.json(), {"erro": "Aluno não encontrado"})
 
     def test_06a_post_alunos_sem_nome(self):
@@ -109,9 +109,9 @@ class TesteAPI(unittest.TestCase):
             "turma_id": 1
         }
         resposta = requests.post(f"{URL_Base}/alunos", json=dados)
-        self.assertIn("erro", resposta.json())  # Espera chave 'erro'
+        self.assertIn("erro", resposta.json()) 
         
-    # Teste professores
+    
     def test_01p_get_lista_professores(self):
         resposta = requests.get(f"{URL_Base}/professores")
         resposta_json = resposta.json()
@@ -133,7 +133,7 @@ class TesteAPI(unittest.TestCase):
 
         resposta = self.app.post('/professores', data=json.dumps(dados), content_type='application/json')
 
-        # Verificar se a resposta foi 201 (criação bem-sucedida)
+      
         self.assertEqual(resposta.status_code, 201)
         resposta_json = json.loads(resposta.data)
         self.assertEqual(resposta_json['mensagem'], 'Professor cadastrado com sucesso!')
@@ -148,7 +148,7 @@ class TesteAPI(unittest.TestCase):
             self.skipTest("Nenhum professor encontrado para deletar")
 
     def test_05p_put_edita_professor(self):
-        # Supondo que o professor com ID 1 exista
+     
         dados = {
             "nome": "Cleber Machado",
             "idade": 41,
@@ -158,13 +158,13 @@ class TesteAPI(unittest.TestCase):
 
         resposta = self.app.put('/professores/1', data=json.dumps(dados), content_type='application/json')
 
-        # Verificar se a resposta foi 200 (sucesso)
+      
         self.assertEqual(resposta.status_code, 200)
         resposta_json = json.loads(resposta.data)
         self.assertEqual(resposta_json['mensagem'], 'Professor atualizado!')
 
     def test_06p_get_professor_inexistente(self):
-        resposta = requests.get(f"{URL_Base}/professores/999")  # ID inexistente
+        resposta = requests.get(f"{URL_Base}/professores/999")  
         self.assertEqual(resposta.json(), {"erro": "Professor não encontrado"})
 
     def test_07p_post_professor_sem_nome(self):
@@ -176,7 +176,7 @@ class TesteAPI(unittest.TestCase):
         resposta = requests.post(f"{URL_Base}/professores", json=dados)
         self.assertIn("erro", resposta.json())
 
-    # Teste turma
+ 
     def test_01t_get_lista_turmas(self):
         resposta = requests.get(f"{URL_Base}/turmas")
         resposta_json = resposta.json()
@@ -191,7 +191,7 @@ class TesteAPI(unittest.TestCase):
         dados = {
             "id": 2,
             "descricao": "Turma de Teste",
-            "professor_id": 1,  # ID do professor que deve estar presente
+            "professor_id": 1, 
             "ativo": True
         }
         resposta = requests.post(f"{URL_Base}/turmas", json=dados)
@@ -215,13 +215,13 @@ class TesteAPI(unittest.TestCase):
 
         resposta = self.app.put('/turmas/1', data=json.dumps(dados), content_type='application/json')
 
-        # Verificar se a resposta foi 200 (sucesso)
+     
         self.assertEqual(resposta.status_code, 200)
         resposta_json = json.loads(resposta.data)
         self.assertEqual(resposta_json['mensagem'], 'Turma atualizada!')
 
     def test_06t_get_turma_inexistente(self):
-        resposta = requests.get(f"{URL_Base}/turmas/999")  # ID inexistente
+        resposta = requests.get(f"{URL_Base}/turmas/999")  
         self.assertEqual(resposta.json(), {"erro": "Turma não encontrada"})
 
     def test_07t_post_turma_sem_descricao(self):
@@ -229,7 +229,7 @@ class TesteAPI(unittest.TestCase):
             "nome": "Turma A"
         }
         resposta = requests.post(f"{URL_Base}/turmas", json=dados)
-        self.assertIn("erro", resposta.json())  # Verifica se o campo 'erro' existe
+        self.assertIn("erro", resposta.json())  
 
 
 if __name__ == "__main__":
