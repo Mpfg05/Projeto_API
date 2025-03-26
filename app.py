@@ -1,5 +1,6 @@
 import re  # Importa regex para validar o nome
 from flask import Flask, jsonify, request  
+from datetime import datetime
 
 
 dici = {
@@ -62,25 +63,26 @@ def getAlunoById(idAluno):
 @app.route('/alunos', methods=['POST'])
 def createAluno():
     dados = request.json
-    campos_obrigatorios = ['id', 'nome', 'idade', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre']
+    campos_obrigatorios = ['nome', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre']
 
     if not all(campo in dados for campo in campos_obrigatorios):
-        return jsonify({"erro": "Campos obrigatórios faltando. Use o exemplo que esta no GET para ter de exemplo cada entrada para aluno!"}), 400
+        return jsonify({"erro": "Campos obrigatórios faltando. Use o exemplo que esta no GET para ter de exemplo cada entrada para aluno!('nome', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre')"}), 400
 
     if not validar_nome(dados["nome"]):
         return jsonify({"erro": "O nome deve conter apenas letras e espaços!"}), 400
 
-    if dados['idade'] <= 0:
-        return jsonify({"erro": "Idade invalida"}), 400
-    
-    aluno_existe = any(aluno['id'] == dados['id'] for aluno in dici["alunos"])
-    if aluno_existe:
-        return jsonify({"erro": "Aluno já existente com esse ID"}), 400
-
     turma_existe = any(turma['id'] == dados['turma_id'] for turma in dici["turmas"])
     if not turma_existe:
         return jsonify({"erro": "Turma não encontrada!"}), 400
+    
+    novo_id = max([aluno["id"] for aluno in dici["alunos"]], default=0) + 1
 
+    data_nascimento = datetime.strptime(dados["data_nascimento"], "%d/%m/%Y")
+    hoje = datetime.now()
+    idade = hoje.year - data_nascimento.year - ((hoje.month, hoje.day) <(data_nascimento.month, data_nascimento.day))
+
+    dados["id"] = novo_id
+    dados["idade"] = idade
     dados["media_final"] = (dados["nota_primeiro_semestre"] + dados["nota_segundo_semestre"]) / 2
 
     dici['alunos'].append(dados)
@@ -93,29 +95,40 @@ def updateAlunos(idAluno):
     for aluno in dici["alunos"]:
         if aluno['id'] == idAluno:
             dados = request.json
-            campos_obrigatorios = ['nome', 'idade', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre']
+            campos_obrigatorios = ['nome', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre']
 
             if not all(campo in dados and dados[campo] not in [None, ""] for campo in campos_obrigatorios):
-                return jsonify({"erro": "Todos os campos são obrigatórios para serem preenchidos!"}), 400
+                return jsonify({"erro": "Todos os campos são obrigatórios para serem preenchidos! ('nome', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre')"}), 400
             
             if not validar_nome(dados["nome"]):
                 return jsonify({"erro": "O nome deve conter apenas letras e espaços!"}), 400
             
-            if dados['idade'] <= 0:
-                return jsonify({"erro": "Idade invalida"})
-
             if "id" in dados and dados["id"] != idAluno:
-                aluno_existe = any(a['id'] == dados["id"] for a in dici["alunos"])
-                if aluno_existe:
-                    return jsonify({"erro": "ID já existe para outro aluno!"}), 400
-            
+                return jsonify({"erro": "Não é permitido mudar o ID do aluno"}), 400
+ 
+            turma_existe = any(turma['id'] == dados['turma_id'] for turma in dici["turmas"])
+            if not turma_existe:
+                return jsonify({"erro": "Turma não encontrada!"}), 400
+
+            try:
+                data_nascimento = datetime.strptime(dados["data_nascimento"], "%d/%m/%Y")
+            except ValueError:
+                return jsonify({"erro": "Data de nascimento inválida! O formato deve ser DD/MM/AAAA."}), 400
+
+            hoje = datetime.now()
+            idade_calculada = hoje.year - data_nascimento.year - ((hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day))
+
+            if dados["idade"] != idade_calculada:
+                return jsonify({"erro": f"Idade informada ({dados['idade']}) não bate com a data de nascimento ({dados['data_nascimento']}). Idade correta seria {idade_calculada}."}), 400
+
             aluno.update({key: value for key, value in dados.items() if key != "id"})
 
             aluno["media_final"] = (aluno["nota_primeiro_semestre"] + aluno["nota_segundo_semestre"]) / 2
 
             return jsonify({"mensagem": "Aluno atualizado!", "aluno": aluno})
-    
+
     return jsonify({"erro": "Aluno não encontrado"}), 404
+
 
 
 ############################################
@@ -151,10 +164,10 @@ def getProfessorById(idProfessor):
 @app.route('/professores', methods=['POST'])
 def createProfessor():
     dados = request.json
-    campos_obrigatorios = ['id', 'nome', 'idade', 'materia', 'observacoes']
+    campos_obrigatorios = ['nome', 'idade', 'materia', 'observacoes']
 
     if not all(campo in dados for campo in campos_obrigatorios):
-        return jsonify({"erro": "Campos obrigatórios faltando. Use o exemplo que esta no GET para ter de exemplo cada entrada para professor!"}), 400
+        return jsonify({"erro": "Campos obrigatórios faltando. Use o exemplo que esta no GET para ter de exemplo cada entrada para professor!('nome', 'idade', 'materia', 'observacoes')"}), 400
 
     if not validar_nome(dados["nome"]):
         return jsonify({"erro": "O nome deve conter apenas letras e espaços!"}), 400
@@ -165,9 +178,9 @@ def createProfessor():
     if dados['idade'] < 17:
         return jsonify({"erro": "Idade invalida, muito novo para ser professor"})
 
-    professor_existe = any(professor['id'] == dados['id'] for professor in dici["professores"])
-    if professor_existe:
-        return jsonify({"erro": "Professor já existente com esse ID"}), 400
+    novo_id = max([professor["id"] for professor in dici["professores"]], default=0) + 1
+
+    dados["id"] = novo_id
 
     dici['professores'].append(dados)
     return jsonify({"mensagem": "Professor cadastrado com sucesso!", "professor": dados}), 201
@@ -184,7 +197,7 @@ def updateProfessores(idProfessor):
             campos_obrigatorios = ['nome', 'idade', 'materia', 'observacoes']
 
             if not all(campo in dados and dados[campo] not in [None, ""] for campo in campos_obrigatorios):
-                return jsonify({"erro": "Todos os campos são obrigatórios para serem preenchidos!"}), 400
+                return jsonify({"erro": "Todos os campos são obrigatórios para serem preenchidos!('nome', 'idade', 'materia', 'observacoes')"}), 400
 
             if not validar_nome(dados["nome"]):
                 return jsonify({"erro": "O nome deve conter apenas letras e espaços!"}), 400
@@ -196,9 +209,7 @@ def updateProfessores(idProfessor):
                 return jsonify({"erro": "Idade invalida, muito novo para ser professor"})
 
             if "id" in dados and dados["id"] != idProfessor:
-                professor_existe = any(p['id'] == dados["id"] for p in dici["professores"])
-                if professor_existe:
-                    return jsonify({"erro": "ID já existe para outro professor!"}), 400
+                return jsonify({"erro": "Não é permitido mudar o ID do professor"}), 400
 
             professor.update({key: value for key, value in dados.items() if key != "id"})
 
@@ -237,13 +248,13 @@ def getTurmaById(idTurma):
 def createTurma():
     dados = request.json
 
-    campos_obrigatorios = ['id', 'descricao', 'professor_id', 'ativo']
+    campos_obrigatorios = ['descricao', 'professor_id', 'ativo']
     if not all(campo in dados for campo in campos_obrigatorios):
-        return jsonify({"erro": "Campos obrigatórios faltando. Use o exemplo que esta no GET para ter de exemplo cada entrada para turma"}), 400
+        return jsonify({"erro": "Campos obrigatórios faltando. Use o exemplo que esta no GET para ter de exemplo cada entrada para turma('descricao', 'professor_id', 'ativo')"}), 400
 
-    turma_existe = any(turma['id'] == dados['id'] for turma in dici["turmas"])
-    if turma_existe:
-        return jsonify({"erro": "Turma ja existente com esse ID"})
+    novo_id = max([turma["id"] for turma in dici["turmas"]], default=0) + 1
+
+    dados["id"] = novo_id
 
     # Verificar se professor_id existe antes de cadastrar a turma
     professor_existe = any(professor['id'] == dados['professor_id'] for professor in dici["professores"])
@@ -266,13 +277,9 @@ def updateTurmas(idTurma):
             if not all(campo in dados and dados[campo] not in [None, ""] for campo in campos_obrigatorios):
                 return jsonify({"erro": "Todos os campos são obrigatórios!"}), 400
 
-            # Impede a alteração do ID para um já existente
             if "id" in dados and dados["id"] != idTurma:
-                turma_existe = any(t['id'] == dados["id"] for t in dici["turmas"])
-                if turma_existe:
-                    return jsonify({"erro": "ID já existe para outra turma!"}), 400
+                return jsonify({"erro": "Não é permitido mudar o ID da turma"}), 400
 
-            # Corrigido para atualizar corretamente a turma
             turma.update({key: value for key, value in dados.items() if key != "id"})
 
             return jsonify({"mensagem": "Turma atualizada!", "turma": turma})
