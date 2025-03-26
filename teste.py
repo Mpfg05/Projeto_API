@@ -85,8 +85,8 @@ class TesteAPI(unittest.TestCase):
     def test_04a_edita_aluno(self):
         dados = {
             "nome": "Joel Lima",
-            "idade": 21,
             "turma_id": 1,
+            "idade": 20,
             "data_nascimento": "17/10/2004",
             "nota_primeiro_semestre": 6,
             "nota_segundo_semestre": 7
@@ -230,6 +230,7 @@ class TesteAPI(unittest.TestCase):
         }
         resposta = requests.post(f"{URL_Base}/turmas", json=dados)
         self.assertIn("erro", resposta.json())  
+
 
 
 if __name__ == "__main__":
