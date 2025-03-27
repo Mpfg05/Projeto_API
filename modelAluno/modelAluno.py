@@ -1,5 +1,4 @@
 import re  # Importa regex para validar o nome
-from flask import Flask, jsonify, request  
 from datetime import datetime
 
 dici = {
@@ -16,7 +15,6 @@ dici = {
     ]
 }    
 
-app = Flask(__name__)
 
 def validar_nome(nome):
     return bool(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ ]+$", nome))
