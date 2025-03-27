@@ -1,5 +1,5 @@
 dici = {
-    "alunos": [
+    "turmas": [
         {
             "id": 1,
             "descricao": "APIs 4B manhã",
