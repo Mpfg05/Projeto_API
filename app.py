@@ -1,4 +1,4 @@
-import re  # Importa regex para validar o nome
+import re  
 from flask import Flask, jsonify, request  
 
 
@@ -36,7 +36,7 @@ dici = {
 app = Flask(__name__)
 
 
-# Função para validar nomes (somente letras e espaços)
+
 def validar_nome(nome):
     return bool(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ ]+$", nome))
 
@@ -56,9 +56,7 @@ def getAlunoById(idAluno):
         
     return jsonify({"erro": "Aluno não encontrado"}), 404
 
-############################################
 
-# Rota POST para adicionar um aluno
 @app.route('/alunos', methods=['POST'])
 def createAluno():
     dados = request.json
@@ -86,7 +84,6 @@ def createAluno():
     dici['alunos'].append(dados)
     return jsonify({"mensagem": "Aluno cadastrado com sucesso!", "aluno": dados}), 201
 
-############################################
 
 @app.route("/alunos/<int:idAluno>", methods=['PUT'])
 def updateAlunos(idAluno):
@@ -118,9 +115,6 @@ def updateAlunos(idAluno):
     return jsonify({"erro": "Aluno não encontrado"}), 404
 
 
-############################################
-
-# Rota DELETE para remover um aluno por ID
 @app.route('/alunos/<int:idAluno>', methods=['DELETE'])
 def deleteAluno(idAluno):
     for aluno in dici["alunos"]:
@@ -130,8 +124,6 @@ def deleteAluno(idAluno):
     
     return jsonify({'erro': 'Aluno não encontrado'}), 404
     
-
-#-------------------------------------------------------------------##-------------------------------------------------------------------#
 
 @app.route("/professores", methods=['GET'])
 def getProfessor():
@@ -146,7 +138,6 @@ def getProfessorById(idProfessor):
         
     return jsonify({"erro": "Professor não encontrado"}), 404
 
-############################################
 
 @app.route('/professores', methods=['POST'])
 def createProfessor():
@@ -172,9 +163,6 @@ def createProfessor():
     dici['professores'].append(dados)
     return jsonify({"mensagem": "Professor cadastrado com sucesso!", "professor": dados}), 201
 
-
-
-############################################
 
 @app.route("/professores/<int:idProfessor>", methods=['PUT'])
 def updateProfessores(idProfessor):
@@ -205,7 +193,6 @@ def updateProfessores(idProfessor):
             return jsonify({"mensagem": "Professor atualizado!", "professor": professor})
     
     return jsonify({"erro": "Professor não encontrado"}), 404
-############################################
 
 @app.route('/professores/<int:idProfessor>', methods=['DELETE'])
 def deleteProfessor(idProfessor):
@@ -216,7 +203,6 @@ def deleteProfessor(idProfessor):
     
     return jsonify({'erro': 'Professor não encontrado'}), 404
 
-#-------------------------------------------------------------------##-------------------------------------------------------------------#
 
 @app.route("/turmas", methods=['GET'])
 def getTurma():
@@ -231,7 +217,6 @@ def getTurmaById(idTurma):
         
     return jsonify({"erro": "Turma não encontrada"}), 404
 
-############################################
 
 @app.route('/turmas', methods=['POST'])
 def createTurma():
@@ -253,8 +238,6 @@ def createTurma():
     dici['turmas'].append(dados)
     return jsonify({"mensagem": "Turma cadastrada com sucesso!", "turma": dados}), 201
 
-
-############################################
 
 @app.route("/turmas/<int:idTurma>", methods=['PUT'])
 def updateTurmas(idTurma):
@@ -279,7 +262,6 @@ def updateTurmas(idTurma):
 
     return jsonify({"erro": "Turma não encontrada"}), 404
 
-############################################
 
 @app.route('/turmas/<int:idTurma>', methods=['DELETE'])
 def deleteTurma(idTurma):
@@ -290,7 +272,6 @@ def deleteTurma(idTurma):
     
     return jsonify({'erro': 'Turma não encontrada'}), 404
 
-#-------------------------------------------------------------------##-------------------------------------------------------------------#
 
 @app.route("/reset", methods=['POST', 'DELETE'])
 def resetar_dados():
@@ -301,7 +282,6 @@ def resetar_dados():
     dici["professores"].clear()
     return jsonify({"mensagem": "Listas de alunos e professores foram apagadas com sucesso!"})
 
-#-------------------------------------------------------------------##-------------------------------------------------------------------#
 
 if __name__ == "__main__":
     app.run(debug=True)
