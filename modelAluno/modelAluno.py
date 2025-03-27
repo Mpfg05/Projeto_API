@@ -15,8 +15,6 @@ dici = {
         }
     ]
 }    
-#-------------------------------------------------------------------##-------------------------------------------------------------------#
-
 
 def getAluno():
     dados = dici['alunos']  
@@ -30,7 +28,6 @@ def getAlunoById(idAluno):
         
     return jsonify({"erro": "Aluno não encontrado"}), 404
 
-############################################
 
 def createAluno():
     dados = request.json
@@ -59,11 +56,6 @@ def createAluno():
     dici['alunos'].append(dados)
     return jsonify({"mensagem": "Aluno cadastrado com sucesso!", "aluno": dados}), 201
 
-############################################
-
-
-############################################
-
 
 def deleteAluno(idAluno):
     for aluno in dici["alunos"]:
@@ -74,7 +66,6 @@ def deleteAluno(idAluno):
     return jsonify({'erro': 'Aluno não encontrado'}), 404
     
 
-#-------------------------------------------------------------------##-------------------------------------------------------------------#
 def updateAlunos(idAluno):
     for aluno in dici["alunos"]:
         if aluno['id'] == idAluno:
