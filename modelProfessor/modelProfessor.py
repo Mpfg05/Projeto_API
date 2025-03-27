@@ -1,12 +1,16 @@
 import re  # Importa regex para validar o nome
 from flask import Flask, jsonify, request  
 
-
-
-
-
-
-
+dici = {
+    "professores": [  
+        {
+            "id": 1,
+            "nome": "Cleber Machado",
+            "idade": 40,
+            "materia": "matemática",
+            "observacoes": "um professor muito esperto e reconhecido pelo MEC"
+        }
+    ]
 
 def getProfessor():
     dados = dici['professores']  
