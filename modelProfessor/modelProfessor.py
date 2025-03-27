@@ -1,5 +1,5 @@
 dici = {
-    "alunos": [
+    "professores": [
         {
             "id": 1,
             "nome": "Cleber Machado",
