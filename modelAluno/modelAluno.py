@@ -1,7 +1,3 @@
-import re  # Importa regex para validar o nome 
-from datetime import datetime
-
-
 dici = {
     "alunos": [
         {
@@ -20,17 +16,35 @@ dici = {
 class AlunoNaoEncontrado(Exception):
     pass
 
-def validar_nome(nome):
-    return bool(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ ]+$", nome))
-
 
 def getAluno():
-    dados = dici['alunos']  
-    return dici
+    return dici["alunos"]
 
 def getAlunoById(idAluno):
     for aluno in dici["alunos"]:
         if aluno["id"] == idAluno:
             return dici
+    try:
+        getAlunoById(idAluno)
+        return True
+    except AlunoNaoEncontrado:
+        return False
         
-    raise AlunoNaoEncontrado
+
+
+def createAluno(dict):
+    dici["alunos"].append(dict)
+
+
+
+def updateAlunos(idAluno, novos_dados):
+    aluno = getAlunoById(idAluno)
+    aluno.update(novos_dados)
+
+
+def deleteAluno(idAluno):
+    aluno = getAlunoById(idAluno)
+    dici['alunos'].remove(aluno)
+
+def reset():
+    dici['alunos'] = [] 
