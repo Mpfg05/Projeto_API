@@ -1,5 +1,4 @@
 import re  
-from flask import Flask, jsonify, request  
 
 dici = {
     "professores": [  
@@ -12,8 +11,6 @@ dici = {
         }
     ]
 }
-
-app = Flask(__name__)
 
 
 
