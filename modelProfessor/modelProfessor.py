@@ -11,6 +11,14 @@ dici = {
             "observacoes": "um professor muito esperto e reconhecido pelo MEC"
         }
     ]
+}
+
+app = Flask(__name__)
+
+
+
+def validar_nome(nome):
+    return bool(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ ]+$", nome))
 
 def getProfessor():
     dados = dici['professores']  
