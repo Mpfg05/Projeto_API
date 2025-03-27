@@ -16,6 +16,12 @@ dici = {
     ]
 }    
 
+app = Flask(__name__)
+
+def validar_nome(nome):
+    return bool(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ ]+$", nome))
+
+
 def getAluno():
     dados = dici['alunos']  
     return jsonify(dados)
