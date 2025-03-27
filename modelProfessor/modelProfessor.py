@@ -1,4 +1,4 @@
-import re  # Importa regex para validar o nome
+import re  
 from flask import Flask, jsonify, request  
 
 dici = {
