@@ -1,9 +1,15 @@
 from flask import Flask, jsonify, request  
 
-
-
-
-
+dici = { 
+    "turmas": [
+        {
+            "id": 1,
+            "descricao": "APIs 4B manhã",
+            "professor_id": 1,
+            "ativo": True
+        }
+    ]
+}
 
 def getTurma():
     dados = dici['turmas']  
