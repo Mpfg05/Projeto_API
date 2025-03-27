@@ -1,5 +1,3 @@
-from flask import Flask, jsonify, request  
-
 dici = { 
     "turmas": [
         {
@@ -11,7 +9,7 @@ dici = {
     ]
 }
 
-app = Flask(__name__)
+
 
 def validar_nome(nome):
     return bool(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ ]+$", nome))
