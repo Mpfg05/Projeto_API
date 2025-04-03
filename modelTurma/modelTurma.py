@@ -9,39 +9,45 @@ dici = {
     ]
 }
 
-
-class TurmaNaoEncontrado(Exception):
-    pass
-
-
 def getTurma():
-    return dici["turmas"]
+    return dici["alunos"]
 
 def getTurmaById(idTurma):
     for turma in dici["turmas"]:
         if turma["id"] == idTurma:
-            return dici
-    try:
-        getTurmaById(idTurma)
-        return True
-    except TurmaNaoEncontrado:
-        return False
-        
+            return turma
+    return None
 
+def crateTurma(dados, professores):
+    campos_obrigatorios = ['descricao', 'professor_id', 'ativo']
+    if not all(campo in dados for campo in campos_obrigatorios):
+        return ({"erro": "Campos obrigatórios faltando. Use o exemplo que esta no GET para ter de exemplo cada entrada para turma('descricao', 'professor_id', 'ativo')"}), 400
+     
+    novo_id = max([turma["id"] for turma in dici["turmas"]], default=0) + 1
+    dados["id"] = novo_id
 
-def createTurma(dict):
-    dici["turmas"].append(dict)
+    professor_existe = any(professor['id'] == dados['professor_id'] for professor in professores)
+    if not professor_existe:
+        return ({"erro": "Professor não encontrado!"}), 400
 
+    dici['turmas'].append(dados)
+    return ({"mensagem": "Turma cadastrada com sucesso!", "turma": dados}), 201
 
-
-def updateTurma(idTurma, novos_dados):
+def updateTurmas(idTurma, novos_dados):
     turma = getTurmaById(idTurma)
-    turma.update(novos_dados)
-
+    if not turma:
+        return{"erro": "Turma não encontrada"}, 404
+    
+    campos_obrigatorios = ['nome', 'ano', 'periodo']
+    if not all(campo in novos_dados and novos_dados[campo] not in [None, ""] for campo in campos_obrigatorios):
+        return {"erro": "Todos os campos são obrigatórios!"}, 400
+    
+    turma.update({key: value for key, value in novos_dados.items() if key != "id"})
+    return {"mensagem": "Turma atualizada!", "turma": turma}
 
 def deleteTurma(idTurma):
     turma = getTurmaById(idTurma)
-    dici['turmas'].remove(turma)
-
-def reset():
-    dici['turmas'] = [] 
+    if turma:
+        dici["turmas"].remove(turma)
+        return True
+    return False
