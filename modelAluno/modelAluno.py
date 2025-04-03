@@ -12,7 +12,7 @@ dici = {
             "nota_primeiro_semestre": 5,
             "nota_segundo_semestre": 5  
         }
-    ],
+    ]
 }
 
 def validar_nome(nome):
