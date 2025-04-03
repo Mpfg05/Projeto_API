@@ -3,41 +3,52 @@ from .modelProfessor import getProfessor, getProfessorById, createProfessor, upd
 
 professores_blueprint = Blueprint('professores', __name__)
 
-@professores_blueprint.route('/professores', methods =['GET'])
+@professores_blueprint.route('/professores', methods=['GET'])
 def get_professores():
     return jsonify(getProfessor())
 
-
-@professores_blueprint.route('/professores:<int:idProfessor>', methods = ['GET'])
+@professores_blueprint.route('/professores/<int:idProfessor>', methods=['GET'])
 def get_professor(idProfessor):
-    try:
-        professor = getProfessorById(idProfessor)
-        return jsonify(professor)
-    except:
-        return jsonify({"erro": "Professor não encontrado"}), 404
-    
+    professor = getProfessorById(idProfessor)
+    if professor is not None:
+        return jsonify(professor), 200
+    return jsonify({"erro": "Professor não encontrado"}), 404
 
-@professores_blueprint.route('/professores', methods = ['POST'])
+@professores_blueprint.route('/professores', methods=['POST'])
 def create_professor():
-    data = request.json
-    createProfessor(data)
-    return jsonify(data), 201
+    try:
+        data = request.json
 
+        if "nome" not in data or not isinstance(data["nome"], str) or data["nome"].strip() == "":
+            return jsonify({"erro": "O campo 'nome' é obrigatório e deve ser uma string válida."}), 400
 
-@professores_blueprint.route('/professores:<int:idProfessor>', methods = ['PUT'])
+        novo_professor = createProfessor(data)
+        return jsonify({
+        "mensagem": "Professor cadastrado com sucesso!",
+        "professor": novo_professor
+        }), 201
+    
+    except Exception as e:
+        return jsonify({"erro": "Erro ao criar professor", "detalhes": str(e)}), 500
+
+@professores_blueprint.route('/professores/<int:idProfessor>', methods=['PUT', 'PATCH'])
 def update_professor(idProfessor):
     data = request.json
-    try:
-        updateProfessores(idProfessor, data)
-        return jsonify(getProfessorById(idProfessor))
-    except:
-        return jsonify({"erro": "Professor não encontrado"}), 404
-    
+    professor_existente = getProfessorById(idProfessor)
 
-@professores_blueprint.route('/professores:<int:idProfessor>', methods = ['DELETE'])
-def delete_professor(idProfessor):
-    try:
-        delete_professor(idProfessor)
-        return '', 204
-    except:
+
+    if professor_existente is None:
         return jsonify({"erro": "Professor não encontrado"}), 404
+
+    updateProfessores(idProfessor, data)
+    return jsonify({"mensagem": "Professor atualizado!", "professor": getProfessorById(idProfessor)}), 200
+
+@professores_blueprint.route('/professores/<int:idProfessor>', methods=['DELETE'])
+def delete_professor(idProfessor):
+    professor_existente = getProfessorById(idProfessor)
+
+    if professor_existente is None:
+        return jsonify({"erro": "Professor não encontrado"}), 404
+
+    deleteProfessor(idProfessor)
+    return jsonify({"mensagem": "Professor removido com sucesso!"}), 200
