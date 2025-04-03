@@ -35,7 +35,7 @@ def getAlunoById(idAluno):
     return None
 
 def createAluno(dados):
-    novo_id = max([aluno["id"] for aluno in dici["alunos"]], default=0) + 1
+    novo_id = max([aluno["id"] for aluno in dici["alunos"]], default=1) + 1
     dados["id"] = novo_id
 
     data_nascimento = datetime.strptime(dados["data_nascimento"], "%d/%m/%Y")
