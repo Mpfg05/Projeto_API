@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from .modelTurma import getTurma, getTurmaById, crateTurma, updateTurmas, deleteTurma
+from .modelTurma import getTurma, getTurmaById, createTurma, updateTurmas, deleteTurma
 
 turmas_blueprint = Blueprint('turmas', __name__)
 
@@ -18,7 +18,7 @@ def get_turma(idTurma):
 @turmas_blueprint.route('/turmas', methods = ['POST'])
 def create_turma():
     data = request.json
-    crateTurma(data)
+    createTurma(data)
     return jsonify(data), 201
 
 @turmas_blueprint.route('/turmas/<int:idTurma>', methods=['PUT'])
