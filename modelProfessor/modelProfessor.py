@@ -47,7 +47,7 @@ def updateProfessores(idProfessor, novos_dados):
     if not professor:
         return {"erro": "Professor não encontrado"}, 404
 
-    # Validações antes da atualização
+
     if "nome" in novos_dados and not validar_nome(novos_dados["nome"]):
         return {"erro": "O nome deve conter apenas letras e espaços!"}, 400
 
