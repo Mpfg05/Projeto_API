@@ -50,7 +50,7 @@ def create_aluno():
 def update_aluno(idAluno):
     try:
         data = request.json
-        turmas = data.get("turmas", [])  # Garante que turmas seja passado corretamente
+        turmas = data.get("turmas", []) 
         aluno_existente = getAlunoById(idAluno)
 
         if "nome" in data and not data["nome"].strip():
@@ -59,7 +59,7 @@ def update_aluno(idAluno):
         if not aluno_existente:
             return jsonify({"erro": "Aluno não encontrado"}), 404
 
-        updateAlunos(idAluno, data, turmas)  # Adicionado terceiro argumento
+        updateAlunos(idAluno, data, turmas) 
         return jsonify({"mensagem": "Aluno atualizado!", "aluno": getAlunoById(idAluno)}), 200
     except Exception as e:
         return jsonify({"erro": "Erro ao atualizar aluno", "detalhes": str(e)}), 500
