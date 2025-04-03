@@ -48,7 +48,7 @@ def createAluno(dados, turmas):
     hoje = datetime.now()
     idade = hoje.year - data_nascimento.year - ((hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day))
 
-    if idade < 5:  # Defini uma idade mínima de 5 anos para um aluno
+    if idade < 5:  
         return {"erro": "Idade inválida! O aluno deve ter pelo menos 5 anos."}, 400
 
     novo_id = max([aluno["id"] for aluno in dici["alunos"]], default=0) + 1
@@ -84,12 +84,12 @@ def updateAlunos(idAluno, novos_dados, turmas):
         if "idade" in novos_dados and novos_dados["idade"] != idade_calculada:
             return {"erro": f"Idade incorreta! A idade correta seria {idade_calculada}."}, 400
 
-        # Atualiza a idade apenas se a data de nascimento for informada
+        
         aluno["idade"] = idade_calculada
 
     aluno.update({key: value for key, value in novos_dados.items() if key != "id"})
 
-    # Recalcula a média se as notas foram atualizadas
+  
     if "nota_primeiro_semestre" in novos_dados or "nota_segundo_semestre" in novos_dados:
         aluno["media_final"] = (aluno["nota_primeiro_semestre"] + aluno["nota_segundo_semestre"]) / 2
 
