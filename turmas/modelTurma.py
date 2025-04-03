@@ -10,7 +10,7 @@ dici = {
 }
 
 def getTurma():
-    return dici["turmas"]  # Corrigido: antes estava 'alunos' ao invés de 'turmas'
+    return dici["turmas"] 
 
 def getTurmaById(idTurma):
     for turma in dici["turmas"]:
@@ -18,7 +18,10 @@ def getTurmaById(idTurma):
             return turma
     return None
 
-def createTurma(dados, professores):  # Corrigido: nome da função estava errado
+def createTurma(dados): 
+    from professores.modelProfessor import dici as prof_dici  
+    professores = prof_dici["professores"]
+    
     campos_obrigatorios = ['descricao', 'professor_id', 'ativo']
     if not all(campo in dados for campo in campos_obrigatorios):
         return {"erro": "Campos obrigatórios faltando. Use o exemplo que está no GET para ter de exemplo cada entrada para turma ('descricao', 'professor_id', 'ativo')"}, 400
@@ -38,7 +41,7 @@ def updateTurmas(idTurma, novos_dados):
     if not turma:
         return {"erro": "Turma não encontrada"}, 404
     
-    campos_obrigatorios = ['descricao', 'professor_id', 'ativo']  # Corrigido: campos estavam errados
+    campos_obrigatorios = ['descricao', 'professor_id', 'ativo']  
     if not all(campo in novos_dados and novos_dados[campo] not in [None, ""] for campo in campos_obrigatorios):
         return {"erro": "Todos os campos são obrigatórios!"}, 400
     
@@ -49,5 +52,5 @@ def deleteTurma(idTurma):
     turma = getTurmaById(idTurma)
     if turma:
         dici["turmas"].remove(turma)
-        return {"mensagem": "Turma removida com sucesso!"}  # Corrigido: retorno melhorado
+        return {"mensagem": "Turma removida com sucesso!"} 
     return {"erro": "Turma não encontrada"}, 404
