@@ -15,7 +15,7 @@ def get_aluno(idAluno):
     except:
         return jsonify({"erro": "Aluno não encontrado"}), 404
     
-@alunos_blueprint.route('/alunos' , methods =['GET'])
+@alunos_blueprint.route('/alunos' , methods =['POST'])
 def create_aluno():
     data = request.json
     createAluno(data)
