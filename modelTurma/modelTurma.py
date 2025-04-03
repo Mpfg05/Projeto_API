@@ -10,7 +10,7 @@ dici = {
 }
 
 def getTurma():
-    return dici["alunos"]
+    return dici["turmas"]  
 
 def getTurmaById(idTurma):
     for turma in dici["turmas"]:
@@ -18,27 +18,27 @@ def getTurmaById(idTurma):
             return turma
     return None
 
-def crateTurma(dados, professores):
+def createTurma(dados, professores):  
     campos_obrigatorios = ['descricao', 'professor_id', 'ativo']
     if not all(campo in dados for campo in campos_obrigatorios):
-        return ({"erro": "Campos obrigatórios faltando. Use o exemplo que esta no GET para ter de exemplo cada entrada para turma('descricao', 'professor_id', 'ativo')"}), 400
+        return {"erro": "Campos obrigatórios faltando. Use o exemplo que está no GET para ter de exemplo cada entrada para turma ('descricao', 'professor_id', 'ativo')"}, 400
      
     novo_id = max([turma["id"] for turma in dici["turmas"]], default=0) + 1
     dados["id"] = novo_id
 
     professor_existe = any(professor['id'] == dados['professor_id'] for professor in professores)
     if not professor_existe:
-        return ({"erro": "Professor não encontrado!"}), 400
+        return {"erro": "Professor não encontrado!"}, 400
 
     dici['turmas'].append(dados)
-    return ({"mensagem": "Turma cadastrada com sucesso!", "turma": dados}), 201
+    return {"mensagem": "Turma cadastrada com sucesso!", "turma": dados}, 201
 
 def updateTurmas(idTurma, novos_dados):
     turma = getTurmaById(idTurma)
     if not turma:
-        return{"erro": "Turma não encontrada"}, 404
+        return {"erro": "Turma não encontrada"}, 404
     
-    campos_obrigatorios = ['nome', 'ano', 'periodo']
+    campos_obrigatorios = ['descricao', 'professor_id', 'ativo']  
     if not all(campo in novos_dados and novos_dados[campo] not in [None, ""] for campo in campos_obrigatorios):
         return {"erro": "Todos os campos são obrigatórios!"}, 400
     
@@ -49,5 +49,5 @@ def deleteTurma(idTurma):
     turma = getTurmaById(idTurma)
     if turma:
         dici["turmas"].remove(turma)
-        return True
-    return False
+        return {"mensagem": "Turma removida com sucesso!"}  
+    return {"erro": "Turma não encontrada"}, 404
