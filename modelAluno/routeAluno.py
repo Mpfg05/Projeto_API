@@ -21,7 +21,7 @@ def create_aluno():
     createAluno(data)
     return jsonify(data), 201
 
-@alunos_blueprint.route('/alunos', methods = ['PUT'])
+@alunos_blueprint.route('/alunos/<int:idAluno>', methods = ['PUT'])
 def update_aluno(idAluno):
     data = request.json
     try:
