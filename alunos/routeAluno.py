@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
-from .modelAluno import getAluno, getAlunoById, createAluno, updateAlunos, deleteAluno
-from turmas.modelTurma import getTurmaById
+from .modelAluno import getAluno, getAlunoById, createAluno, updateAluno, deleteAluno
+from turmas.modelTurma import getTurmaById, getTurma
+
 alunos_blueprint = Blueprint('alunos', __name__)
 
 
@@ -26,21 +27,21 @@ def get_aluno(idAluno):
 def create_aluno():
     try:
         data = request.json
-
+        turmas = getTurma() 
 
         if "nome" not in data or not data["nome"].strip():
             return jsonify({"erro": "O campo 'nome' é obrigatório."}), 400   
-             
+
+        if "turma_id" not in data:
+            return jsonify({"erro": "O campo 'turma_id' é obrigatório."}), 400  
+
         turma = getTurmaById(data["turma_id"])
         if not turma:
             return jsonify({"erro": "Turma não encontrada."}), 400  
 
-
-        novo_aluno = createAluno(data, [])  
-
-        return jsonify({"mensagem": "Aluno cadastrado com sucesso!", "aluno": novo_aluno}), 201
+        novo_aluno, status = createAluno(data, turmas) 
+        return jsonify(novo_aluno), status
     except Exception as e:
-
         return jsonify({"erro": "Erro ao criar aluno", "detalhes": str(e)}), 500
 
 
@@ -50,17 +51,15 @@ def create_aluno():
 def update_aluno(idAluno):
     try:
         data = request.json
-        turmas = data.get("turmas", []) 
         aluno_existente = getAlunoById(idAluno)
-
-        if "nome" in data and not data["nome"].strip():
-            return jsonify({"erro": "O campo 'nome' não pode estar vazio."}), 400
-
         if not aluno_existente:
             return jsonify({"erro": "Aluno não encontrado"}), 404
 
-        updateAlunos(idAluno, data, turmas) 
-        return jsonify({"mensagem": "Aluno atualizado!", "aluno": getAlunoById(idAluno)}), 200
+        if "id" in data and data["id"] != idAluno:
+            return jsonify({"erro": "Não é permitido alterar o ID do aluno."}), 400
+
+        resultado = updateAluno(idAluno, data)  
+        return jsonify(resultado), 200
     except Exception as e:
         return jsonify({"erro": "Erro ao atualizar aluno", "detalhes": str(e)}), 500
 
