@@ -52,5 +52,5 @@ def deleteTurma(idTurma):
     turma = getTurmaById(idTurma)
     if turma:
         dici["turmas"].remove(turma)
-        return {"mensagem": "Turma removida com sucesso!"} 
+        return {"mensagem": "Turma removida com sucesso!"}  
     return {"erro": "Turma não encontrada"}, 404
