@@ -30,11 +30,12 @@ def create_turma():
         if not professor:
             return jsonify({"erro": "Professor não encontrado."}), 400
 
-
         nova_turma = createTurma(data)  
 
-        print("Turma criada com sucesso!", nova_turma)  
-        return jsonify({"mensagem": "Turma criada com sucesso!", "turma": nova_turma}), 201
+        return jsonify({
+            "mensagem": "Turma criada com sucesso!",
+            "turma": nova_turma
+        }), 201  
     except Exception as e:
         return jsonify({"erro": "Erro ao criar turma", "detalhes": str(e)}), 500
 
@@ -52,11 +53,19 @@ def update_turma(idTurma):
         if "descricao" in data and not data["descricao"].strip():
             return jsonify({"erro": "O campo 'descricao' não pode estar vazio."}), 400
 
+
+        if "professor_id" in data:
+            professor = getProfessorById(data["professor_id"])
+            if not professor:
+                return jsonify({"erro": "Professor não encontrado."}), 400
+
         updateTurmas(idTurma, data)
         return jsonify({"mensagem": "Turma atualizada!", "turma": getTurmaById(idTurma)}), 200
     except Exception as e:
         print("Erro ao editar turma:", e)
         return jsonify({"erro": "Erro ao editar turma", "detalhes": str(e)}), 500
+
+
 
 @turmas_blueprint.route('/turmas/<int:idTurma>', methods=['DELETE'])
 def delete_turma(idTurma):
