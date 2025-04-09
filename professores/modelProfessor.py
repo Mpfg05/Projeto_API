@@ -22,7 +22,7 @@ def getProfessorById(idProfessor):
     for professor in dici["professores"]:
         if professor["id"] == idProfessor:
             return professor
-    return None
+    return {"erro": "Professor não encontrado"}
 
 def createProfessor(dados):
     campos_obrigatorios = ['nome', 'idade', 'materia', 'observacoes']
