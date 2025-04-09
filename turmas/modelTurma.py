@@ -16,7 +16,7 @@ def getTurmaById(idTurma):
     for turma in dici["turmas"]:
         if turma["id"] == idTurma:
             return turma
-    return None
+    return {"erro": "Turma não encontrada"}
 
 def createTurma(dados): 
     from professores.modelProfessor import dici as prof_dici  
