@@ -1,3 +1,5 @@
+import re
+
 dici = {
     "alunos": [        
         {
@@ -10,6 +12,9 @@ dici = {
             "nota_segundo_semestre": 5  
         }]
 }
+
+def validar_nome(nome):
+    return bool(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ ]+$", nome))
 
 def getAluno():
     return dici["alunos"]
@@ -25,6 +30,9 @@ def createAluno(dados, turmas):
     campos_obrigatorios = ['nome', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre']
     if not all(campo in dados for campo in campos_obrigatorios):
         return {"erro": "Campos obrigatórios faltando!"}, 400
+
+    if not validar_nome(dados["nome"]):
+        return {"erro": "O nome deve conter apenas letras e espaços!"}, 400
 
 
     turma_existe = any(turma['id'] == dados['turma_id'] for turma in turmas)
