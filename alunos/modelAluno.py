@@ -18,7 +18,7 @@ def getAlunoById(idAluno):
     for aluno in dici["alunos"]:
         if aluno["id"] == idAluno:
             return aluno
-    return None
+    return {"erro": "Aluno não encontrado"}
 
 def createAluno(dados, turmas):  
 
