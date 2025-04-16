@@ -9,4 +9,4 @@ app.register_blueprint(professores_blueprint)
 app.register_blueprint(turmas_blueprint)
 
 if __name__ == '__main__':
-  app.run(host=app.config["HOST"], port = app.config['PORT'],debug=app.config['DEBUG'] )
+  app.run(host="0.0.0.0", port=5000)
