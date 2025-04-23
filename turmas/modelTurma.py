@@ -1,4 +1,3 @@
-from .modelTurma import Turma
 from professores.modelProfessor import Professor
 
 
