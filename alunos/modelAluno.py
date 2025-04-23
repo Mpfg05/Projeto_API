@@ -1,19 +1,27 @@
 import re
 from datetime import datetime
+from config import db
 
-dici = {
-    "alunos": [        
-        {
-            "id": 1,
-            "nome": "Joel",
-            "idade": 20,
-            "turma_id": 1,
-            "data_nascimento": "17/10/2005",
-            "nota_primeiro_semestre": 5,
-            "nota_segundo_semestre": 5  
-        }]
-}
-
+class Aluno(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    idade = db.Column(db.Integer, nullable=False)
+    turma_id = db.Column(db.Integer, nullable=False)
+    data_nascimento = db.Column(db.String(10), nullable=False)
+    nota_primeiro_semestre = db.Column(db.Float, nullable=False)
+    nota_segundo_semestre = db.Column(db.Float, nullable=False)
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nome": self.nome,
+            "idade": self.idade,
+            "turma_id": self.turma_id,
+            "data_nascimento": self.data_nascimento,
+            "nota_primeiro_semestre": self.nota_primeiro_semestre,
+            "nota_segundo_semestre": self.nota_segundo_semestre
+        }    
+        
 def validar_nome(nome):
     return bool(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ ]+$", nome))
 
@@ -27,13 +35,12 @@ def calcular_idade(data_nascimento):
         return None
 
 def getAluno():
-    return dici["alunos"]
+    alunos = Aluno.query.all()
+    return [aluno.to_dict() for aluno in alunos]
 
 def getAlunoById(idAluno):
-    for aluno in dici["alunos"]:
-        if aluno["id"] == idAluno:
-            return aluno
-    return {"erro": "Aluno não encontrado"}
+    aluno = Aluno.query.get(idAluno)
+    return aluno.to_dict() if aluno else {"erro": "Aluno não encontrado"}
 
 def createAluno(dados, turmas):  
     campos_obrigatorios = ['nome', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre']
@@ -51,17 +58,22 @@ def createAluno(dados, turmas):
     if idade is None:
         return {"erro": "Data de nascimento inválida. Use o formato DD/MM/AAAA."}, 400
 
-    dados.pop("idade", None) 
-    novo_id = max([aluno["id"] for aluno in dici["alunos"]], default=0) + 1
-    dados["id"] = novo_id
-    dados["idade"] = idade
+    novo_aluno = Aluno(
+        nome=dados["nome"],
+        idade=idade,
+        turma_id=dados["turma_id"],
+        data_nascimento=dados["data_nascimento"],
+        nota_primeiro_semestre=dados["nota_primeiro_semestre"],
+        nota_segundo_semestre=dados["nota_segundo_semestre"]
+    )
 
-    dici['alunos'].append(dados)
-    return {"mensagem": "Aluno cadastrado com sucesso!", "aluno": dados}, 201
+    db.session.add(novo_aluno)
+    db.session.commit()
+    return {"mensagem": "Aluno cadastrado com sucesso!", "aluno": novo_aluno.to_dict()}, 201
 
 def updateAluno(idAluno, novos_dados):
-    aluno = getAlunoById(idAluno)
-    if not aluno or "erro" in aluno:
+    aluno = Aluno.query.get(idAluno)
+    if not aluno:
         return {"erro": "Aluno não encontrado"}, 404
 
     campos_obrigatorios = ['nome', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre']
@@ -75,16 +87,20 @@ def updateAluno(idAluno, novos_dados):
     if idade is None:
         return {"erro": "Data de nascimento inválida. Use o formato DD/MM/AAAA."}, 400
 
-    novos_dados.pop("idade", None)  # ignora tentativa de alterar idade
-    novos_dados["idade"] = idade
+    aluno.nome = novos_dados["nome"]
+    aluno.turma_id = novos_dados["turma_id"]
+    aluno.data_nascimento = novos_dados["data_nascimento"]
+    aluno.nota_primeiro_semestre = novos_dados["nota_primeiro_semestre"]
+    aluno.nota_segundo_semestre = novos_dados["nota_segundo_semestre"]
+    aluno.idade = idade  
 
-    aluno.update({key: value for key, value in novos_dados.items() if key != "id"})
-
-    return {"mensagem": "Aluno atualizado!", "aluno": aluno}
+    db.session.commit()
+    return {"mensagem": "Aluno atualizado!", "aluno": aluno.to_dict()}
 
 def deleteAluno(idAluno):
-    aluno = getAlunoById(idAluno)
-    if aluno and "erro" not in aluno:
-        dici["alunos"].remove(aluno)
+    aluno = Aluno.query.get(idAluno)
+    if aluno:
+        db.session.delete(aluno)
+        db.session.commit()
         return {"mensagem": "Aluno removido com sucesso!"}
     return {"erro": "Aluno não encontrado"}, 404
