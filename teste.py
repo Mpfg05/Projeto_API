@@ -4,7 +4,7 @@ import time
 import json
 from app import app
 
-URL_Base = "http://127.0.0.1:8000"
+URL_Base = "http://127.0.0.1:5000"
 
 class TesteAPI(unittest.TestCase):
     
