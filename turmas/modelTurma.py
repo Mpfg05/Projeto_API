@@ -1,5 +1,5 @@
-from models.turma import Turma
-from models.professor import Professor
+from .modelTurma import Turma
+from professores.modelProfessor import Professor
 
 
 class Turma(db.Model):
