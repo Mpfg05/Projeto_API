@@ -2,6 +2,9 @@ from flask import Blueprint, request, jsonify
 from .modelAluno import getAluno, getAlunoById, createAluno, updateAluno, deleteAluno
 from turmas.modelTurma import getTurmaById, getTurma
 
+from config import db
+
+
 alunos_blueprint = Blueprint('alunos', __name__)
 
 
