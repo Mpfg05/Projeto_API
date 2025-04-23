@@ -1,11 +1,11 @@
-FROM python:3.10
+FROM python:3.12
 
 WORKDIR /app
 
-COPY . 
+COPY . .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 5000
 
-CMD ["python", "app.py"]
+CMD ["sh", "-c", "python app.py && python teste.py"]
