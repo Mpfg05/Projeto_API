@@ -1,6 +1,9 @@
 from flask import Blueprint, request, jsonify
 from .modelProfessor import getProfessor, getProfessorById, createProfessor, updateProfessores, deleteProfessor
 
+from config import db
+
+
 professores_blueprint = Blueprint('professores', __name__)
 
 @professores_blueprint.route('/professores', methods=['GET'])
