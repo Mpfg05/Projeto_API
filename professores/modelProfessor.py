@@ -1,19 +1,26 @@
 import re
 from datetime import datetime
+from config import db
 
-dici = {
-    "professores": [  
-        {
-            "id": 1,
-            "nome": "Cleber Machado",
-            "idade": 40,
-            "materia": "matemática",
-            "observacoes": "um professor muito esperto e reconhecido pelo MEC",
-            "data_nascimento": "01/01/1984"
-        }
-    ] 
-}
-
+class Professor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    idade = db.Column(db.Integer, nullable=False)    
+    data_nascimento = db.Column(db.String(10), nullable=False)
+    materia = db.Column(db.String(100), nullable=False)    
+    observacoes = db.Column(db.String(100), nullable=False)
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nome": self.nome,
+            "idade": self.idade,
+            "data_nascimento": self.data_nascimento,
+            "observacoes": self.observacoes,
+            "materia": self.materia
+        }       
+        
+        
 def validar_nome(nome):
     return bool(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ ]+$", nome))
 
@@ -27,13 +34,12 @@ def calcular_idade(data_nascimento):
         return None
 
 def getProfessor():
-    return dici["professores"]
+    professores = Professor.query.all()
+    return [professor.to_dict() for professor in professores]    
 
 def getProfessorById(idProfessor):
-    for professor in dici["professores"]:
-        if professor["id"] == idProfessor:
-            return professor
-    return {"erro": "Professor não encontrado"}
+    professor = Professor.query.get(idProfessor)
+    return professor.to_dict() if professor else {"erro": "Professor não encontrado"}
 
 def createProfessor(dados):
     campos_obrigatorios = ['nome', 'materia', 'observacoes', 'data_nascimento']
@@ -47,16 +53,23 @@ def createProfessor(dados):
     if idade is None or idade < 17:
         return {"erro": "Data de nascimento inválida ou idade insuficiente. Mínimo 17 anos."}, 400
 
-    dados.pop("idade", None)
-    novo_id = max([prof["id"] for prof in dici["professores"]], default=0) + 1
-    dados["id"] = novo_id
-    dados["idade"] = idade
+    novo_professor = Professor(
+        nome=dados["nome"],
+        idade=idade,
+        data_nascimento=dados["data_nascimento"],
+        observacoes=dados["observacoes"],
+        materia=dados["materia"]
+    )
 
-    dici['professores'].append(dados)
-    return {"mensagem": "Professor cadastrado com sucesso!", "professor": dados}, 201
+    db.session.add(novo_professor)
+    db.session.commit()
+    return {"mensagem": "Professor cadastrado com sucesso!", "aluno": novo_professor.to_dict()}, 201
+
+
 
 def updateProfessores(idProfessor, novos_dados):
-    professor = getProfessorById(idProfessor)
+    professor = Professor.query.get(idProfessor)
+    
     if not professor or "erro" in professor:
         return {"erro": "Professor não encontrado"}, 404
 
@@ -69,13 +82,19 @@ def updateProfessores(idProfessor, novos_dados):
             return {"erro": "Data de nascimento inválida ou idade insuficiente. Mínimo 17 anos."}, 400
         novos_dados["idade"] = idade
 
-    novos_dados.pop("idade", None)  # ignora tentativas de alterar diretamente
-    professor.update({k: v for k, v in novos_dados.items() if k != "id"})
-    return {"mensagem": "Professor atualizado com sucesso!", "professor": professor}, 200
+    professor.nome = novos_dados["nome"]
+    professor.materia = novos_dados["materia"]
+    professor.data_nascimento = novos_dados["data_nascimento"]
+    professor.observacoes = novos_dados["observacoes"]
+    professor.idade = idade  
+
+    db.session.commit()
+    return {"mensagem": "Professor atualizado!", "aluno": professor.to_dict()}
 
 def deleteProfessor(idProfessor):
-    professor = getProfessorById(idProfessor)
-    if professor and "erro" not in professor:
-        dici["professores"].remove(professor)
-        return {"mensagem": "Professor removido com sucesso!"}, 200
+    professor = Professor.query.get(idProfessor)
+    if professor:
+        db.session.delete(professor)
+        db.session.commit()
+        return {"mensagem": "Professor removido com sucesso!"}
     return {"erro": "Professor não encontrado"}, 404
