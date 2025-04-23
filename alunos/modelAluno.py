@@ -1,6 +1,10 @@
 import re
 from datetime import datetime
 from config import db
+from models.aluno import Aluno
+from models.turma import Turma
+
+
 
 class Aluno(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,7 +47,8 @@ def getAlunoById(idAluno):
     aluno = Aluno.query.get(idAluno)
     return aluno.to_dict() if aluno else {"erro": "Aluno não encontrado"}
 
-def createAluno(dados, turmas):  
+
+def createAluno(dados):
     campos_obrigatorios = ['nome', 'turma_id', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre']
     if not all(campo in dados for campo in campos_obrigatorios):
         return {"erro": "Campos obrigatórios faltando!"}, 400
@@ -51,8 +56,8 @@ def createAluno(dados, turmas):
     if not validar_nome(dados["nome"]):
         return {"erro": "O nome deve conter apenas letras e espaços!"}, 400
 
-    turma_existe = any(turma['id'] == dados['turma_id'] for turma in turmas)
-    if not turma_existe:
+    turma = Turma.query.get(dados['turma_id'])
+    if not turma:
         return {"erro": "Turma não encontrada!"}, 400
 
     idade = calcular_idade(dados["data_nascimento"])
@@ -70,6 +75,7 @@ def createAluno(dados, turmas):
 
     db.session.add(novo_aluno)
     db.session.commit()
+
     return {"mensagem": "Aluno cadastrado com sucesso!", "aluno": novo_aluno.to_dict()}, 201
 
 def updateAluno(idAluno, novos_dados):
