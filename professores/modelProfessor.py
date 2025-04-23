@@ -9,7 +9,9 @@ class Professor(db.Model):
     data_nascimento = db.Column(db.String(10), nullable=False)
     materia = db.Column(db.String(100), nullable=False)    
     observacoes = db.Column(db.String(100), nullable=False)
-    
+
+    turmas = db.relationship('Turma', backref='professor', lazy=True)
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -18,7 +20,7 @@ class Professor(db.Model):
             "data_nascimento": self.data_nascimento,
             "observacoes": self.observacoes,
             "materia": self.materia
-        }       
+        }
         
         
 def validar_nome(nome):
