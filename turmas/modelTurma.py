@@ -1,56 +1,73 @@
-dici = {
-    "turmas": [
-        {
-            "id": 1,
-            "descricao": "APIs 4B manhã",
-            "professor_id": 1,
-            "ativo": True
+class Turma(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    descricao = db.Column(db.String(100), nullable=False)
+    professor_id = db.Column(db.Integer, db.ForeignKey('professor.id'), nullable=False)
+    ativo = db.Column(db.Boolean, default=True, nullable=False)
+
+    alunos = db.relationship('Aluno', backref='turma', lazy=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "descricao": self.descricao,
+            "professor_id": self.professor_id,
+            "ativo": self.ativo
         }
-    ]
-}
+
 
 def getTurma():
-    return dici["turmas"] 
+    turmas = Turma.query.all()
+    return [turma.to_dict() for turma in turmas]
 
 def getTurmaById(idTurma):
-    for turma in dici["turmas"]:
-        if turma["id"] == idTurma:
-            return turma
-    return {"erro": "Turma não encontrada"}
+    turma = Turma.query.get(idTurma)
+    return turma.to_dict() if turma else None
 
-def createTurma(dados): 
-    from professores.modelProfessor import dici as prof_dici  
-    professores = prof_dici["professores"]
-    
+def createTurma(dados):
+    from professores.modelProfessor import Professor  
+
     campos_obrigatorios = ['descricao', 'professor_id', 'ativo']
     if not all(campo in dados for campo in campos_obrigatorios):
-        return {"erro": "Campos obrigatórios faltando. Use o exemplo que está no GET para ter de exemplo cada entrada para turma ('descricao', 'professor_id', 'ativo')"}, 400
-     
-    novo_id = max([turma["id"] for turma in dici["turmas"]], default=0) + 1
-    dados["id"] = novo_id
+        return {"erro": "Campos obrigatórios faltando. Use o exemplo do GET para referência ('descricao', 'professor_id', 'ativo')"}, 400
 
-    professor_existe = any(professor['id'] == dados['professor_id'] for professor in professores)
-    if not professor_existe:
+    professor = Professor.query.get(dados['professor_id'])
+    if not professor:
         return {"erro": "Professor não encontrado!"}, 400
 
-    dici['turmas'].append(dados)
-    return {"mensagem": "Turma cadastrada com sucesso!", "turma": dados}, 201
+    nova_turma = Turma(
+        descricao=dados['descricao'],
+        professor_id=dados['professor_id'],
+        ativo=dados['ativo']
+    )
+
+    db.session.add(nova_turma)
+    db.session.commit()
+    return {"mensagem": "Turma cadastrada com sucesso!", "turma": nova_turma.to_dict()}, 201
 
 def updateTurmas(idTurma, novos_dados):
-    turma = getTurmaById(idTurma)
+    turma = Turma.query.get(idTurma)
     if not turma:
         return {"erro": "Turma não encontrada"}, 404
-    
-    campos_obrigatorios = ['descricao', 'professor_id', 'ativo']  
+
+    campos_obrigatorios = ['descricao', 'professor_id', 'ativo']
     if not all(campo in novos_dados and novos_dados[campo] not in [None, ""] for campo in campos_obrigatorios):
         return {"erro": "Todos os campos são obrigatórios!"}, 400
-    
-    turma.update({key: value for key, value in novos_dados.items() if key != "id"})
-    return {"mensagem": "Turma atualizada!", "turma": turma}
+
+    professor = Professor.query.get(novos_dados['professor_id'])
+    if not professor:
+        return {"erro": "Professor não encontrado!"}, 400
+
+    turma.descricao = novos_dados['descricao']
+    turma.professor_id = novos_dados['professor_id']
+    turma.ativo = novos_dados['ativo']
+
+    db.session.commit()
+    return {"mensagem": "Turma atualizada!", "turma": turma.to_dict()}
 
 def deleteTurma(idTurma):
-    turma = getTurmaById(idTurma)
+    turma = Turma.query.get(idTurma)
     if turma:
-        dici["turmas"].remove(turma)
-        return {"mensagem": "Turma removida com sucesso!"}  
+        db.session.delete(turma)
+        db.session.commit()
+        return {"mensagem": "Turma removida com sucesso!"}
     return {"erro": "Turma não encontrada"}, 404
