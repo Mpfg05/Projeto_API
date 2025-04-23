@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from config import db
-from models.aluno import Aluno
+from .modelAluno import Aluno
 from models.turma import Turma
 
 
