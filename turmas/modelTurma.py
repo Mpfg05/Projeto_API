@@ -1,3 +1,7 @@
+from models.turma import Turma
+from models.professor import Professor
+
+
 class Turma(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     descricao = db.Column(db.String(100), nullable=False)
@@ -24,11 +28,9 @@ def getTurmaById(idTurma):
     return turma.to_dict() if turma else None
 
 def createTurma(dados):
-    from professores.modelProfessor import Professor  
-
     campos_obrigatorios = ['descricao', 'professor_id', 'ativo']
     if not all(campo in dados for campo in campos_obrigatorios):
-        return {"erro": "Campos obrigatórios faltando. Use o exemplo do GET para referência ('descricao', 'professor_id', 'ativo')"}, 400
+        return {"erro": "Campos obrigatórios faltando. Use ('descricao', 'professor_id', 'ativo')."}, 400
 
     professor = Professor.query.get(dados['professor_id'])
     if not professor:
@@ -42,6 +44,7 @@ def createTurma(dados):
 
     db.session.add(nova_turma)
     db.session.commit()
+
     return {"mensagem": "Turma cadastrada com sucesso!", "turma": nova_turma.to_dict()}, 201
 
 def updateTurmas(idTurma, novos_dados):
