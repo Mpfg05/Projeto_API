@@ -1,5 +1,7 @@
 from flask import Blueprint, request, jsonify
 from .modelProfessor import getProfessor, getProfessorById, createProfessor, updateProfessores, deleteProfessor
+from turmas.modelTurma import getTurmaByProfessor, deleteTurma  
+from alunos.modelAluno import getAlunosByTurma  
 
 from config import db
 
@@ -68,6 +70,16 @@ def delete_professor(idProfessor):
 
     if professor_existente is None:
         return jsonify({"erro": "Professor não encontrado"}), 404
+
+    turma_do_professor = getTurmaByProfessor(idProfessor)
+    if turma_do_professor:
+        alunos_na_turma = getAlunosByTurma(turma_do_professor.id)
+        if alunos_na_turma:
+            return jsonify({"erro": "A turma ainda possui alunos. Remova os alunos para excluir a turma."}), 400
+        else:
+            # Deleta a turma, caso não haja alunos
+            deleteTurma(turma_do_professor.id)
+
 
     deleteProfessor(idProfessor)
     return jsonify({"mensagem": "Professor removido com sucesso!"}), 200
