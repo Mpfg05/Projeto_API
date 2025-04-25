@@ -40,7 +40,7 @@ def getProfessor():
     return [professor.to_dict() for professor in professores]    
 
 def getProfessorById(idProfessor):
-    professor = Professor.query.get(idProfessor)
+    professor = db.session.get(Professor, idProfessor)
     return professor.to_dict() if professor else {"erro": "Professor não encontrado"}
 
 def createProfessor(dados):
@@ -70,31 +70,34 @@ def createProfessor(dados):
 
 
 def updateProfessores(idProfessor, novos_dados):
-    professor = Professor.query.get(idProfessor)
+    professor = db.session.get(Professor, idProfessor)
     
-    if not professor or "erro" in professor:
+    if not professor:
         return {"erro": "Professor não encontrado"}, 404
 
-    if "nome" in novos_dados and not validar_nome(novos_dados["nome"]):
-        return {"erro": "O nome deve conter apenas letras e espaços!"}, 400
+    if "nome" in novos_dados:
+        if not validar_nome(novos_dados["nome"]):
+            return {"erro": "O nome deve conter apenas letras e espaços!"}, 400
+        professor.nome = novos_dados["nome"]
+
+    if "materia" in novos_dados:
+        professor.materia = novos_dados["materia"]
+
+    if "observacoes" in novos_dados:
+        professor.observacoes = novos_dados["observacoes"]
 
     if "data_nascimento" in novos_dados:
         idade = calcular_idade(novos_dados["data_nascimento"])
         if idade is None or idade < 17:
             return {"erro": "Data de nascimento inválida ou idade insuficiente. Mínimo 17 anos."}, 400
-        novos_dados["idade"] = idade
-
-    professor.nome = novos_dados["nome"]
-    professor.materia = novos_dados["materia"]
-    professor.data_nascimento = novos_dados["data_nascimento"]
-    professor.observacoes = novos_dados["observacoes"]
-    professor.idade = idade  
+        professor.data_nascimento = novos_dados["data_nascimento"]
+        professor.idade = idade
 
     db.session.commit()
     return {"mensagem": "Professor atualizado!", "aluno": professor.to_dict()}
 
 def deleteProfessor(idProfessor):
-    professor = Professor.query.get(idProfessor)
+    professor = db.session.get(Professor, idProfessor)
     if professor:
         db.session.delete(professor)
         db.session.commit()
