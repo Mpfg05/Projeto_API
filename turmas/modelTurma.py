@@ -1,4 +1,5 @@
 from professores.modelProfessor import Professor
+from config import db
 
 
 class Turma(db.Model):
