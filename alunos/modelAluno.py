@@ -1,9 +1,7 @@
 import re
 from datetime import datetime
 from config import db
-
 from turmas.modelTurma import Turma
-
 
 
 class Aluno(db.Model):
@@ -16,6 +14,7 @@ class Aluno(db.Model):
     nota_segundo_semestre = db.Column(db.Float, nullable=False)
 
     def to_dict(self):
+        media_final = (self.nota_primeiro_semestre + self.nota_segundo_semestre) / 2
         return {
             "id": self.id,
             "nome": self.nome,
@@ -23,7 +22,8 @@ class Aluno(db.Model):
             "turma_id": self.turma_id,
             "data_nascimento": self.data_nascimento,
             "nota_primeiro_semestre": self.nota_primeiro_semestre,
-            "nota_segundo_semestre": self.nota_segundo_semestre
+            "nota_segundo_semestre": self.nota_segundo_semestre,
+            "media_final": media_final  
         }
 
         
@@ -44,7 +44,7 @@ def getAluno():
     return [aluno.to_dict() for aluno in alunos]
 
 def getAlunoById(idAluno):
-    aluno = Aluno.query.get(idAluno)
+    aluno = db.session.get(Aluno, idAluno)
     return aluno.to_dict() if aluno else {"erro": "Aluno não encontrado"}
 
 
@@ -56,7 +56,7 @@ def createAluno(dados):
     if not validar_nome(dados["nome"]):
         return {"erro": "O nome deve conter apenas letras e espaços!"}, 400
 
-    turma = Turma.query.get(dados['turma_id'])
+    turma = db.session.get(Turma, dados['turma_id'])
     if not turma:
         return {"erro": "Turma não encontrada!"}, 400
 
@@ -79,7 +79,7 @@ def createAluno(dados):
     return {"mensagem": "Aluno cadastrado com sucesso!", "aluno": novo_aluno.to_dict()}, 201
 
 def updateAluno(idAluno, novos_dados):
-    aluno = Aluno.query.get(idAluno)
+    aluno = db.session.get(Aluno, idAluno)
     if not aluno:
         return {"erro": "Aluno não encontrado"}, 404
 
@@ -90,9 +90,14 @@ def updateAluno(idAluno, novos_dados):
     if not validar_nome(novos_dados["nome"]):
         return {"erro": "O nome deve conter apenas letras e espaços!"}, 400
 
+    turma = db.session.get(Turma, novos_dados["turma_id"])
+    if not turma:
+        return {"erro": "Turma inexistente!"}, 400
+
     idade = calcular_idade(novos_dados["data_nascimento"])
     if idade is None:
         return {"erro": "Data de nascimento inválida. Use o formato DD/MM/AAAA."}, 400
+
 
     aluno.nome = novos_dados["nome"]
     aluno.turma_id = novos_dados["turma_id"]
@@ -102,10 +107,16 @@ def updateAluno(idAluno, novos_dados):
     aluno.idade = idade  
 
     db.session.commit()
-    return {"mensagem": "Aluno atualizado!", "aluno": aluno.to_dict()}
+
+    return {"mensagem": "Aluno atualizado!"}
+
+def getAlunosByTurma(turma_id):
+    alunos = Aluno.query.filter_by(turma_id=turma_id).all()
+    return alunos
+
 
 def deleteAluno(idAluno):
-    aluno = Aluno.query.get(idAluno)
+    aluno = db.session.get(Aluno, idAluno)
     if aluno:
         db.session.delete(aluno)
         db.session.commit()
