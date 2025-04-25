@@ -18,13 +18,12 @@ class Turma(db.Model):
             "ativo": self.ativo
         }
 
-
 def getTurma():
     turmas = Turma.query.all()
     return [turma.to_dict() for turma in turmas]
 
 def getTurmaById(idTurma):
-    turma = Turma.query.get(idTurma)
+    turma = db.session.get(Turma, idTurma)
     return turma.to_dict() if turma else None
 
 def createTurma(dados):
@@ -32,14 +31,14 @@ def createTurma(dados):
     if not all(campo in dados for campo in campos_obrigatorios):
         return {"erro": "Campos obrigatórios faltando. Use ('descricao', 'professor_id', 'ativo')."}, 400
 
-    professor = Professor.query.get(dados['professor_id'])
+    professor = db.session.get(Professor, dados['professor_id'])
     if not professor:
         return {"erro": "Professor não encontrado!"}, 400
 
     nova_turma = Turma(
         descricao=dados['descricao'],
         professor_id=dados['professor_id'],
-        ativo=dados['ativo']
+        ativo=bool(dados['ativo'])  
     )
 
     db.session.add(nova_turma)
@@ -48,7 +47,7 @@ def createTurma(dados):
     return {"mensagem": "Turma cadastrada com sucesso!", "turma": nova_turma.to_dict()}, 201
 
 def updateTurmas(idTurma, novos_dados):
-    turma = Turma.query.get(idTurma)
+    turma = db.session.get(Turma, idTurma)
     if not turma:
         return {"erro": "Turma não encontrada"}, 404
 
@@ -56,7 +55,7 @@ def updateTurmas(idTurma, novos_dados):
     if not all(campo in novos_dados and novos_dados[campo] not in [None, ""] for campo in campos_obrigatorios):
         return {"erro": "Todos os campos são obrigatórios!"}, 400
 
-    professor = Professor.query.get(novos_dados['professor_id'])
+    professor = db.session.get(Professor, novos_dados['professor_id'])
     if not professor:
         return {"erro": "Professor não encontrado!"}, 400
 
@@ -67,8 +66,13 @@ def updateTurmas(idTurma, novos_dados):
     db.session.commit()
     return {"mensagem": "Turma atualizada!", "turma": turma.to_dict()}
 
+def getTurmaByProfessor(professor_id):
+    turma = Turma.query.filter_by(professor_id=professor_id).first()
+    return turma
+
+
 def deleteTurma(idTurma):
-    turma = Turma.query.get(idTurma)
+    turma = db.session.get(Turma, idTurma)
     if turma:
         db.session.delete(turma)
         db.session.commit()
