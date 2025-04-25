@@ -30,7 +30,7 @@ def get_aluno(idAluno):
 def create_aluno():
     try:
         data = request.json
-        turmas = getTurma() 
+
 
         if "nome" not in data or not data["nome"].strip():
             return jsonify({"erro": "O campo 'nome' é obrigatório."}), 400   
@@ -42,7 +42,7 @@ def create_aluno():
         if not turma:
             return jsonify({"erro": "Turma não encontrada."}), 400  
 
-        novo_aluno, status = createAluno(data, turmas) 
+        novo_aluno, status = createAluno(data) 
         return jsonify(novo_aluno), status
     except Exception as e:
         return jsonify({"erro": "Erro ao criar aluno", "detalhes": str(e)}), 500
@@ -61,8 +61,8 @@ def update_aluno(idAluno):
         if "id" in data and data["id"] != idAluno:
             return jsonify({"erro": "Não é permitido alterar o ID do aluno."}), 400
 
-        resultado = updateAluno(idAluno, data)  
-        return jsonify(resultado), 200
+        updateAluno(idAluno, data)  
+        return jsonify({"mensagem": "Aluno atualizado!"}), 200
     except Exception as e:
         return jsonify({"erro": "Erro ao atualizar aluno", "detalhes": str(e)}), 500
 
