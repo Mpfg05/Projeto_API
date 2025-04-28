@@ -25,6 +25,10 @@ class Aluno(db.Model):
             "nota_segundo_semestre": self.nota_segundo_semestre,
             "media_final": media_final  
         }
+        if incluir_turma and self.turma:
+            aluno_dict["turma"] = self.turma.to_dict()
+    
+        return aluno_dict
 
         
 def validar_nome(nome):
@@ -45,7 +49,7 @@ def getAluno():
 
 def getAlunoById(idAluno):
     aluno = db.session.get(Aluno, idAluno)
-    return aluno.to_dict() if aluno else {"erro": "Aluno não encontrado"}
+    return aluno.to_dict(incluir_turma=True) if aluno else {"erro": "Aluno não encontrado"}
 
 
 def createAluno(dados):
