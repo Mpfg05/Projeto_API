@@ -17,10 +17,11 @@ class Turma(db.Model):
             "professor_id": self.professor_id,
             "ativo": self.ativo
         }
-        if incluir_turma and self.turma:
-            aluno_dict["turma"] = self.turma.to_dict()
-    
-        return aluno_dict
+        if incluir_professor_e_alunos:
+            turma_dict["professor"] = self.professor.to_dict() if self.professor else None
+            turma_dict["alunos"] = [aluno.to_dict() for aluno in self.alunos]
+
+        return turma_dict
 
 def getTurma():
     turmas = Turma.query.all()
