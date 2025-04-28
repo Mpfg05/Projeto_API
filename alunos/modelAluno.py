@@ -13,7 +13,7 @@ class Aluno(db.Model):
     nota_primeiro_semestre = db.Column(db.Float, nullable=False)
     nota_segundo_semestre = db.Column(db.Float, nullable=False)
 
-    def to_dict(self):
+    def to_dict(self, incluir_turma=False):
         media_final = (self.nota_primeiro_semestre + self.nota_segundo_semestre) / 2
         aluno_dict = {
             "id": self.id,
@@ -25,8 +25,8 @@ class Aluno(db.Model):
             "nota_segundo_semestre": self.nota_segundo_semestre,
             "media_final": media_final  
         }
-        if incluir_turma and self.turma:
-            aluno_dict["turma"] = self.turma.to_dict()
+        if incluir_turma and hasattr(self, 'turmas'):
+            aluno_dict["turmas"] = [turma.to_dict() for turma in self.turmas]
     
         return aluno_dict
 
@@ -126,3 +126,5 @@ def deleteAluno(idAluno):
         db.session.commit()
         return {"mensagem": "Aluno removido com sucesso!"}
     return {"erro": "Aluno não encontrado"}, 404
+
+
