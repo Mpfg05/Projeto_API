@@ -11,12 +11,16 @@ class Turma(db.Model):
     alunos = db.relationship('Aluno', backref='turma', lazy=True)
 
     def to_dict(self):
-        return {
+        turma_dict = {
             "id": self.id,
             "descricao": self.descricao,
             "professor_id": self.professor_id,
             "ativo": self.ativo
         }
+        if incluir_turma and self.turma:
+            aluno_dict["turma"] = self.turma.to_dict()
+    
+        return aluno_dict
 
 def getTurma():
     turmas = Turma.query.all()
