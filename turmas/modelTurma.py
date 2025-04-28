@@ -29,7 +29,7 @@ def getTurma():
 
 def getTurmaById(idTurma):
     turma = db.session.get(Turma, idTurma)
-    return turma.to_dict() if turma else None
+    return turma.to_dict(incluir_professor_e_alunos=True) if turma else None
 
 def createTurma(dados):
     campos_obrigatorios = ['descricao', 'professor_id', 'ativo']
