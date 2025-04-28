@@ -15,7 +15,7 @@ class Aluno(db.Model):
 
     def to_dict(self):
         media_final = (self.nota_primeiro_semestre + self.nota_segundo_semestre) / 2
-        return {
+        aluno_dict = {
             "id": self.id,
             "nome": self.nome,
             "idade": self.idade,
