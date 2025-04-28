@@ -10,7 +10,8 @@ class Turma(db.Model):
 
     alunos = db.relationship('Aluno', backref='turma', lazy=True)
 
-    def to_dict(self):
+
+    def to_dict(self, incluir_professor_e_alunos=False):
         turma_dict = {
             "id": self.id,
             "descricao": self.descricao,
@@ -18,10 +19,16 @@ class Turma(db.Model):
             "ativo": self.ativo
         }
         if incluir_professor_e_alunos:
-            turma_dict["professor"] = self.professor.to_dict() if self.professor else None
-            turma_dict["alunos"] = [aluno.to_dict() for aluno in self.alunos]
+            turma_dict["alunos"] = [aluno.to_dict(incluir_turma=False) for aluno in self.alunos]
+
+
+        professor = db.session.get(Professor, self.professor_id)
+        if professor:
+            turma_dict["professor"] = professor.to_dict(incluir_turma=False)
 
         return turma_dict
+
+
 
 def getTurma():
     turmas = Turma.query.all()
