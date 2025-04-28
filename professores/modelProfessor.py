@@ -13,7 +13,7 @@ class Professor(db.Model):
     turmas = db.relationship('Turma', backref='professor', lazy=True)
 
     def to_dict(self):
-        return {
+        professor_dict = {
             "id": self.id,
             "nome": self.nome,
             "idade": self.idade,
@@ -21,6 +21,10 @@ class Professor(db.Model):
             "observacoes": self.observacoes,
             "materia": self.materia
         }
+        if incluir_turma and self.turma:
+            professor_dict["turma"] = self.turma.to_dict()
+
+        return professor_dict
         
         
 def validar_nome(nome):
@@ -41,7 +45,7 @@ def getProfessor():
 
 def getProfessorById(idProfessor):
     professor = db.session.get(Professor, idProfessor)
-    return professor.to_dict() if professor else {"erro": "Professor não encontrado"}
+    return professor.to_dict(incluir_turma=True) if professor else {"erro": "Professor não encontrado"}
 
 def createProfessor(dados):
     campos_obrigatorios = ['nome', 'materia', 'observacoes', 'data_nascimento']
