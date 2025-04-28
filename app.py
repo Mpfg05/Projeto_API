@@ -18,7 +18,7 @@ with app.app_context():
 
 def run_tests():
     os.environ['FLASK_ENV'] = 'testing'
-    # Executa os testes e captura o resultado
+    
     result = pytest.main(['--maxfail=1', '--disable-warnings', '--tb=short'])
     return result
 
