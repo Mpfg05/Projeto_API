@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from .modelAluno import getAluno, getAlunoById, createAluno, updateAluno, deleteAluno
-from turmas.modelTurma import getTurmaById, getTurma
+from turmas.modelTurma import getTurmaById
 
 from config import db
 
@@ -80,3 +80,6 @@ def delete_aluno(idAluno):
         return jsonify({"mensagem": "Aluno removido com sucesso!"}), 200  
     except Exception as e:
         return jsonify({"erro": "Erro ao deletar aluno", "detalhes": str(e)}), 500
+
+
+
