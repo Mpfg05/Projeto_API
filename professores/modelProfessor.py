@@ -12,7 +12,7 @@ class Professor(db.Model):
 
     turmas = db.relationship('Turma', backref='professor', lazy=True)
 
-    def to_dict(self):
+    def to_dict(self, incluir_turma=False):
         professor_dict = {
             "id": self.id,
             "nome": self.nome,
@@ -21,8 +21,8 @@ class Professor(db.Model):
             "observacoes": self.observacoes,
             "materia": self.materia
         }
-        if incluir_turma and self.turma:
-            professor_dict["turma"] = self.turma.to_dict()
+        if incluir_turma and hasattr(self, 'turmas'):
+            professor_dict["turmas"] = [turma.to_dict() for turma in self.turmas]
 
         return professor_dict
         
