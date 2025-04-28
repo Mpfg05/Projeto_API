@@ -7,58 +7,67 @@ from app import app
 URL_Base = "http://127.0.0.1:8000"
 
 class TesteAPI(unittest.TestCase):
-    
-    def setUp(self):
-        self.app = app.test_client()  
-        self.app.testing = True 
-        time.sleep(1)
-        
 
-        resposta_professor = requests.get(f"{URL_Base}/professores/1")
-        if resposta_professor.status_code != 200:
+    def setUp(self):
+        self.app = app.test_client()
+        self.app.testing = True
+        time.sleep(1)
+
+      
+        resposta_professor = requests.get(f"{URL_Base}/professores")
+        professores = resposta_professor.json()
+        if professores:
+            self.professor_id = professores[0]['id']
+        else:
             dados_professor = {
+                "nome": "Professor Teste",
                 "data_nascimento": "17/10/2002",
                 "materia": "Teste",
-                "nome": "Professor Teste",
-                "observacoes": "Professora apaixonada pela disciplina."
+                "observacoes": "Professor apaixonada pela disciplina."
             }
-            requests.post(f"{URL_Base}/professores", json=dados_professor)
-        
+            resposta = requests.post(f"{URL_Base}/professores", json=dados_professor)
+            self.professor_id = resposta.json().get('id', 1)
 
-        resposta_turma = requests.get(f"{URL_Base}/turmas/1")
-        if resposta_turma.status_code != 200:
+      
+        resposta_turmas = requests.get(f"{URL_Base}/turmas")
+        turmas = resposta_turmas.json()
+        if turmas:
+            self.turma_id = turmas[0]['id']
+        else:
             dados_turma = {
                 "descricao": "Turma de Teste",
-                "professor_id": 1, 
-                "ativo": "true"
+                "professor_id": self.professor_id,
+                "ativo": True
             }
-            requests.post(f"{URL_Base}/turmas", json=dados_turma)
-        
+            resposta = requests.post(f"{URL_Base}/turmas", json=dados_turma)
+            self.turma_id = resposta.json().get('id', 1)
 
-        resposta_aluno = requests.get(f"{URL_Base}/alunos/1")
-        if resposta_aluno.status_code != 200:
+       
+        resposta_alunos = requests.get(f"{URL_Base}/alunos")
+        alunos = resposta_alunos.json()
+        if alunos:
+            self.aluno_id = alunos[0]['id']
+        else:
             dados_aluno = {
-                "nome": "Alunos Teste",
-                "turma_id": 1,
+                "nome": "Aluno Teste",
+                "turma_id": self.turma_id,
                 "data_nascimento": "01/01/2005",
                 "nota_primeiro_semestre": 8,
                 "nota_segundo_semestre": 8
             }
-            requests.post(f"{URL_Base}/alunos", json=dados_aluno)
-        
-        time.sleep(1) 
+            resposta = requests.post(f"{URL_Base}/alunos", json=dados_aluno)
+            self.aluno_id = resposta.json().get('id', 1)
 
+        time.sleep(0.5)
 
-
-
+    
 
     def test_01p_get_lista_professores(self):
         resposta = requests.get(f"{URL_Base}/professores")
-        resposta_json = resposta.json()
-        self.assertIsInstance(resposta_json, list)
+        self.assertIsInstance(resposta.json(), list)
 
     def test_02p_get_professor_por_id(self):
-        resposta = requests.get(f"{URL_Base}/professores/1")
+        resposta = requests.get(f"{URL_Base}/professores/{self.professor_id}")
         self.assertEqual(resposta.status_code, 200)
         self.assertIsInstance(resposta.json(), dict)
 
@@ -69,194 +78,171 @@ class TesteAPI(unittest.TestCase):
             "materia": "História",
             "observacoes": "Professora apaixonada pela disciplina."
         }
-
         resposta = self.app.post('/professores', data=json.dumps(dados), content_type='application/json')
-
-      
         self.assertEqual(resposta.status_code, 201)
-        resposta_json = json.loads(resposta.data)
+        resposta_json = resposta.get_json()
         self.assertEqual(resposta_json['mensagem'], 'Professor cadastrado com sucesso!')
 
     def test_04p_put_edita_professor(self):
-     
         dados = {
+            "nome": "Ana Costa Editada",
             "data_nascimento": "17/10/2002",
             "materia": "Matemática",
-            "nome": "Ana Costa",
-            "observacoes": "Professora apaixonada pela disciplina."
+            "observacoes": "Atualizado."
         }
-
-        resposta = self.app.put(f'/professores/1', data=json.dumps(dados), content_type='application/json')
-
-      
+        resposta = self.app.put(f'/professores/{self.professor_id}', data=json.dumps(dados), content_type='application/json')
         self.assertEqual(resposta.status_code, 200)
-        resposta_json = json.loads(resposta.data)
+        resposta_json = resposta.get_json()
         self.assertEqual(resposta_json['mensagem'], 'Professor atualizado!')
 
     def test_05p_get_professor_inexistente(self):
-        resposta = requests.get(f"{URL_Base}/professores/999")  
+        resposta = requests.get(f"{URL_Base}/professores/999")
         self.assertEqual(resposta.json(), {"erro": "Professor não encontrado"})
 
     def test_06p_post_professor_sem_nome(self):
         dados = {
+            "nome": "",
             "data_nascimento": "17/10/2000",
             "materia": "Matemática Aplicada",
-            "nome": "",
-            "observacoes": "Professor apaixonada pela disciplina."
+            "observacoes": "Teste"
         }
         resposta = requests.post(f"{URL_Base}/professores", json=dados)
         self.assertIn("erro", resposta.json())
 
-
-
-
+    
 
     def test_01t_get_lista_turmas(self):
         resposta = requests.get(f"{URL_Base}/turmas")
-        resposta_json = resposta.json()
-        self.assertIsInstance(resposta_json, list)
+        self.assertIsInstance(resposta.json(), list)
 
     def test_02t_post_cria_turmas(self):
         dados = {
             "descricao": "Turma de ADS",
-            "professor_id": 1, 
+            "professor_id": self.professor_id,
             "ativo": True
         }
         resposta = requests.post(f"{URL_Base}/turmas", json=dados)
         self.assertEqual(resposta.status_code, 201)
 
-
     def test_03t_get_turmas_por_id(self):
-        if requests.get(f"{URL_Base}/turmas/1").status_code != 200:
-            dados_turma = {
-                "descricao": "Turma de Teste",
-                "professor_id": 1,
-                "ativo": True
-            }
-            requests.post(f"{URL_Base}/turmas", json=dados_turma)
-
-        resposta = requests.get(f"{URL_Base}/turmas/1")
+        resposta = requests.get(f"{URL_Base}/turmas/{self.turma_id}")
         self.assertEqual(resposta.status_code, 200)
         self.assertIsInstance(resposta.json(), dict)
 
-
-
     def test_04t_put_edita_turma(self):
         dados = {
-            "descricao": "APIs 4B tarde",
-            "professor_id": 1,
+            "descricao": "Turma Atualizada",
+            "professor_id": self.professor_id,
             "ativo": True
         }
-
-        resposta = self.app.put(f'/turmas/1', data=json.dumps(dados), content_type='application/json')
-
+        resposta = self.app.put(f'/turmas/{self.turma_id}', data=json.dumps(dados), content_type='application/json')
         self.assertEqual(resposta.status_code, 200)
         resposta_json = resposta.get_json()
         self.assertEqual(resposta_json['mensagem'], 'Turma atualizada!')
 
-
     def test_05t_get_turma_inexistente(self):
-        resposta = requests.get(f"{URL_Base}/turmas/999")  
+        resposta = requests.get(f"{URL_Base}/turmas/999")
         self.assertEqual(resposta.json(), {"erro": "Turma não encontrada"})
 
     def test_06t_post_turma_sem_descricao(self):
         dados = {
-            "professor_id": 1,
+            "professor_id": self.professor_id,
             "ativo": True
         }
         resposta = requests.post(f"{URL_Base}/turmas", json=dados)
-        self.assertIn("erro", resposta.json())      
+        self.assertIn("erro", resposta.json())
 
-
-
+    
 
     def test_01a_get_alunos(self):
         resposta = requests.get(f"{URL_Base}/alunos")
-        resposta_json = resposta.json()
-        self.assertIsInstance(resposta_json, list)
+        self.assertIsInstance(resposta.json(), list)
 
     def test_02a_post_alunos(self):
         dados = {
             "nome": "Tatianna",
-            "turma_id": 1,
-            "data_nascimento": "01/01/2005",  
+            "turma_id": self.turma_id,
+            "data_nascimento": "01/01/2005",
             "nota_primeiro_semestre": 8,
             "nota_segundo_semestre": 8
         }
-
-        resposta = self.app.post(f'{URL_Base}/alunos', json=dados)
-
+        resposta = self.app.post('/alunos', json=dados)
         self.assertEqual(resposta.status_code, 201)
         resposta_json = resposta.get_json()
         self.assertEqual(resposta_json['mensagem'], 'Aluno cadastrado com sucesso!')
 
-
     def test_03a_edita_aluno(self):
         dados = {
             "nome": "Tatianna Braga",
-            "turma_id": 1,
+            "turma_id": self.turma_id,
             "data_nascimento": "01/01/2005",
             "nota_primeiro_semestre": 10,
-            "nota_segundo_semestre": 8
+            "nota_segundo_semestre": 9
         }
-
-        resposta = self.app.put('/alunos/1', data=json.dumps(dados), content_type='application/json')
-
+        resposta = self.app.put(f'/alunos/{self.aluno_id}', data=json.dumps(dados), content_type='application/json')
         self.assertEqual(resposta.status_code, 200)
-        resposta_json = resposta.get_json()  
+        resposta_json = resposta.get_json()
         if isinstance(resposta_json, list):
-
-            resposta_json = resposta_json[0] 
+            resposta_json = resposta_json[0]
         self.assertEqual(resposta_json.get('mensagem'), 'Aluno atualizado!')
 
-
     def test_04a_get_alunos_inexistente(self):
-        resposta = requests.get(f"{URL_Base}/alunos/999")  
+        resposta = requests.get(f"{URL_Base}/alunos/999")
         self.assertEqual(resposta.json(), {"erro": "Aluno não encontrado"})
 
     def test_05a_post_alunos_sem_nome(self):
         dados = {
             "nome": "",
-            "turma_id": 1,
+            "turma_id": self.turma_id,
             "data_nascimento": "01/01/2006",
-            "nota_primeiro_semestre": 8,
-            "nota_segundo_semestre": 8
+            "nota_primeiro_semestre": 7,
+            "nota_segundo_semestre": 9
         }
         resposta = requests.post(f"{URL_Base}/alunos", json=dados)
-        self.assertIn("erro", resposta.json()) 
-        
+        self.assertIn("erro", resposta.json())
+
     
-
-
-
- 
-
-    def test_06a_delete_alunos(self):
+    def test_delete_alunos(self):
         resposta_lista = requests.get(f"{URL_Base}/alunos").json()
-        aluno_id = resposta_lista[0]['id'] if resposta_lista else None
-        if aluno_id:
-            resposta = requests.delete(f"{URL_Base}/alunos/{aluno_id}")
-            self.assertEqual(resposta.status_code, 200)
-        else:
-            self.skipTest("Nenhum aluno encontrado para deletar")
+        for aluno in resposta_lista:
+            requests.delete(f"{URL_Base}/alunos/{aluno['id']}")
 
-    def test_07t_delete_turma(self):
-        turma = requests.get(f"{URL_Base}/turmas/2").json()
-        turma_id = turma.get('id')
-        if turma_id:
+    def test_delete_turma(self):
+        
+        resposta_lista_alunos = requests.get(f"{URL_Base}/alunos").json()
+        for aluno in resposta_lista_alunos:
+            if aluno['turma_id'] == self.turma_id:
+                requests.delete(f"{URL_Base}/alunos/{aluno['id']}")
+        
+        resposta_lista_turmas = requests.get(f"{URL_Base}/turmas").json()
+        if resposta_lista_turmas:
+            turma_id = resposta_lista_turmas[0]['id']
             resposta = requests.delete(f"{URL_Base}/turmas/{turma_id}")
             self.assertEqual(resposta.status_code, 200)
         else:
-            self.skipTest("Nenhuma turma encontrada para deletar")
+            self.skipTest("Nenhuma turma para deletar")
 
-    def test_07p_delete_professor(self):
-        professor = requests.get(f"{URL_Base}/professores/2").json()
-        professor_id = professor.get('id')
-        if professor_id:
-            resposta = requests.delete(f"{URL_Base}/professores/{professor_id}")
-            self.assertEqual(resposta.status_code, 200)
-        else:
-            self.skipTest("Nenhum professor encontrado para deletar")
+    def test_delete_professor(self):
+        
+        while True:
+            resposta_lista_turmas = requests.get(f"{URL_Base}/turmas").json()
+            turmas_do_professor = [turma for turma in resposta_lista_turmas if turma['professor_id'] == self.professor_id]
+
+            if not turmas_do_professor:
+                break
+
+            for turma in turmas_do_professor:
+                
+                resposta_lista_alunos = requests.get(f"{URL_Base}/alunos").json()
+                for aluno in resposta_lista_alunos:
+                    if aluno['turma_id'] == turma['id']:
+                        requests.delete(f"{URL_Base}/alunos/{aluno['id']}")
+                
+                requests.delete(f"{URL_Base}/turmas/{turma['id']}")
+    
+        
+        resposta = requests.delete(f"{URL_Base}/professores/{self.professor_id}")
+        self.assertEqual(resposta.status_code, 200)
 
 
 if __name__ == "__main__":
