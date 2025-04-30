@@ -1,8 +1,4 @@
-
 from swagger.swagger_config import configure_swagger
-import pytest
-import sys
-import os
 from config import app, db
 from alunos.routeAluno import alunos_blueprint
 from professores.routeProfessor import professores_blueprint
@@ -19,4 +15,4 @@ with app.app_context():
 
 
 if __name__ == '__main__':
-     app.run(host=app.config["HOST"], port=app.config['PORT'], debug=app.config['DEBUG'])
+    app.run(host=app.config["HOST"], port=app.config['PORT'], debug=app.config['DEBUG'])
