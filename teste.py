@@ -21,7 +21,7 @@ class TesteAPI(unittest.TestCase):
         else:
             dados_professor = {
                 "nome": "Professor Teste",
-                "data_nascimento": "17/10/2002",
+                "idade": "30",
                 "materia": "Teste",
                 "observacoes": "Professor apaixonada pela disciplina."
             }
@@ -74,7 +74,7 @@ class TesteAPI(unittest.TestCase):
     def test_03p_post_professores(self):
         dados = {
             "nome": "Ana Costa",
-            "data_nascimento": "17/10/2000",
+            "idade": "30",
             "materia": "História",
             "observacoes": "Professora apaixonada pela disciplina."
         }
@@ -86,7 +86,7 @@ class TesteAPI(unittest.TestCase):
     def test_04p_put_edita_professor(self):
         dados = {
             "nome": "Ana Costa Editada",
-            "data_nascimento": "17/10/2002",
+            "idade": "30",
             "materia": "Matemática",
             "observacoes": "Atualizado."
         }
@@ -102,7 +102,7 @@ class TesteAPI(unittest.TestCase):
     def test_06p_post_professor_sem_nome(self):
         dados = {
             "nome": "",
-            "data_nascimento": "17/10/2000",
+            "idade": "30",
             "materia": "Matemática Aplicada",
             "observacoes": "Teste"
         }
