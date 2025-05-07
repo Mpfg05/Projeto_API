@@ -2,11 +2,11 @@ import re
 from datetime import datetime
 from config import db
 
+
 class Professor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     idade = db.Column(db.Integer, nullable=False)    
-    data_nascimento = db.Column(db.String(10), nullable=False)
     materia = db.Column(db.String(100), nullable=False)    
     observacoes = db.Column(db.String(100), nullable=False)
 
@@ -17,7 +17,6 @@ class Professor(db.Model):
             "id": self.id,
             "nome": self.nome,
             "idade": self.idade,
-            "data_nascimento": self.data_nascimento,
             "observacoes": self.observacoes,
             "materia": self.materia
         }
@@ -30,14 +29,6 @@ class Professor(db.Model):
 def validar_nome(nome):
     return bool(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ ]+$", nome))
 
-def calcular_idade(data_nascimento):
-    try:
-        nascimento = datetime.strptime(data_nascimento, "%d/%m/%Y")
-        hoje = datetime.today()
-        idade = hoje.year - nascimento.year - ((hoje.month, hoje.day) < (nascimento.month, nascimento.day))
-        return idade
-    except ValueError:
-        return None
 
 def getProfessor():
     professores = Professor.query.all()
@@ -48,28 +39,31 @@ def getProfessorById(idProfessor):
     return professor.to_dict(incluir_turma=True) if professor else {"erro": "Professor não encontrado"}
 
 def createProfessor(dados):
-    campos_obrigatorios = ['nome', 'materia', 'observacoes', 'data_nascimento']
+    campos_obrigatorios = ['nome', 'materia', 'observacoes', 'idade']
     if not all(campo in dados for campo in campos_obrigatorios):
-        return {"erro": "Campos obrigatórios faltando. Use ('nome', 'materia', 'observacoes', 'data_nascimento')."}, 400
+        return {"erro": "Campos obrigatórios faltando. Use ('nome', 'materia', 'observacoes', 'idade')."}, 400
 
     if not validar_nome(dados["nome"]):
         return {"erro": "O nome deve conter apenas letras e espaços!"}, 400
 
-    idade = calcular_idade(dados["data_nascimento"])
-    if idade is None or idade < 17:
-        return {"erro": "Data de nascimento inválida ou idade insuficiente. Mínimo 17 anos."}, 400
+    try:
+        idade = int(dados["idade"])
+        if idade <= 17:
+            return {"erro": "O professor deve ter mais de 17 anos!"}, 400
+    except ValueError:
+        return {"erro": "Idade deve ser um número inteiro!"}, 400
 
     novo_professor = Professor(
         nome=dados["nome"],
-        idade=idade,
-        data_nascimento=dados["data_nascimento"],
+        idade=dados["idade"],
         observacoes=dados["observacoes"],
         materia=dados["materia"]
     )
 
     db.session.add(novo_professor)
     db.session.commit()
-    return {"mensagem": "Professor cadastrado com sucesso!", "aluno": novo_professor.to_dict()}, 201
+    return {"mensagem": "Professor cadastrado com sucesso!", "professor": novo_professor.to_dict()}, 201
+
 
 
 
@@ -89,13 +83,16 @@ def updateProfessores(idProfessor, novos_dados):
 
     if "observacoes" in novos_dados:
         professor.observacoes = novos_dados["observacoes"]
+    
+    if "idade" in novos_dados:
+        try:
+            idade = int(novos_dados["idade"])
+            if idade <= 17:
+                return {"erro": "O professor deve ter mais de 17 anos!"}, 400
+            professor.idade = idade
+        except ValueError:
+            return {"erro": "Idade deve ser um número inteiro!"}, 400
 
-    if "data_nascimento" in novos_dados:
-        idade = calcular_idade(novos_dados["data_nascimento"])
-        if idade is None or idade < 17:
-            return {"erro": "Data de nascimento inválida ou idade insuficiente. Mínimo 17 anos."}, 400
-        professor.data_nascimento = novos_dados["data_nascimento"]
-        professor.idade = idade
 
     db.session.commit()
     return {"mensagem": "Professor atualizado!", "aluno": professor.to_dict()}
