@@ -32,12 +32,9 @@ def create_professor():
         if "nome" not in data or not isinstance(data["nome"], str) or data["nome"].strip() == "":
             return jsonify({"erro": "O campo 'nome' é obrigatório e deve ser uma string válida."}), 400
 
-        novo_professor = createProfessor(data)
+        resposta, status = createProfessor(data)
 
-        return jsonify({
-            "mensagem": "Professor cadastrado com sucesso!",
-            "professor": novo_professor
-        }), 201  
+        return jsonify(resposta), status 
     except Exception as e:
         return jsonify({"erro": "Erro ao criar professor", "detalhes": str(e)}), 500
 
@@ -77,7 +74,6 @@ def delete_professor(idProfessor):
         if alunos_na_turma:
             return jsonify({"erro": "A turma ainda possui alunos. Remova os alunos para excluir a turma."}), 400
         else:
-            # Deleta a turma, caso não haja alunos
             deleteTurma(turma_do_professor.id)
 
 
