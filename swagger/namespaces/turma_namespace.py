@@ -29,18 +29,18 @@ class AlunosResource(Resource):
         response, status_code = createTurma(data)
         return response, status_code
 
-@turmas_ns.route("/<int:id_aluno>")
+@turmas_ns.route("/<int:id_turma>")
 class AlunoIdResource(Resource):
     @turmas_ns.marshal_with(turma_output_model)
-    def get(self, id_aluno):
-        return getTurmaById(id_aluno)
+    def get(self, id_turma):
+        return getTurmaById(id_turma)
 
     @turmas_ns.expect(turma_model)
-    def put(self, id_aluno):
+    def put(self, id_turma):
         data = turmas_ns.payload
-        updateTurmas(id_aluno, data)
+        updateTurmas(id_turma, data)
         return data, 200
 
-    def delete(self, id_aluno):
-        deleteTurma(id_aluno)
-        return {"message": "Aluno excluído com sucesso"}, 200
+    def delete(self, id_turma):
+        deleteTurma(id_turma)
+        return {"message": "Turma excluído com sucesso"}, 200
