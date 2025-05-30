@@ -8,10 +8,6 @@ https://projeto-api-jdan.onrender.com/
 
 ## 📝 Descrição da API
 Este repositório contém a API do Sistema de Gerenciamento, responsável pelo cadastro e gerenciamento de alunos, professores e turmas. Esta API fornece os dados necessários para integração com os microserviços de Reservas e Atividades, compartilhando os IDs de turmas e professores.
-Validações feitas via requisição externa:
-
-- Verifica se a **turma existe**: `GET /turmas/<id>`
-- *(Opcional)* Verifica se o aluno existe: `GET /alunos/<id>`
 
 ---
 
